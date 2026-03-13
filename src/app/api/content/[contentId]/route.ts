@@ -1,0 +1,113 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { LedewireError, AuthError, NotFoundError } from '@ledewire/node'
+import { requireAuth } from '@/lib/auth'
+import { createMerchantClient } from '@/lib/ledewire'
+
+export async function GET(
+  _request: NextRequest,
+  { params }: { params: Promise<{ contentId: string }> },
+) {
+  const { contentId } = await params
+
+  try {
+    const { storeId } = await requireAuth()
+    const client = await createMerchantClient()
+    const item = await client.seller.content.get(storeId, contentId)
+    return NextResponse.json({ item })
+  } catch (err) {
+    if (err instanceof AuthError) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+    }
+    if (err instanceof NotFoundError) {
+      return NextResponse.json({ error: 'Content not found' }, { status: 404 })
+    }
+    if (err instanceof LedewireError) {
+      const e = err as LedewireError
+      return NextResponse.json({ error: e.message }, { status: e.statusCode })
+    }
+    throw err
+  }
+}
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ contentId: string }> },
+) {
+  const { contentId } = await params
+
+  let body: unknown
+  try {
+    body = await request.json()
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+  }
+
+  const { title, price_cents, content_body, visibility, content_uri, external_identifier, content_type } = body as {
+    title?: string
+    price_cents?: number
+    content_body?: string
+    visibility?: string
+    content_uri?: string
+    external_identifier?: string
+    content_type?: string
+  }
+
+  // Build a patch with only the fields that were provided
+  const patch: Record<string, unknown> = {}
+  if (title !== undefined) patch.title = title
+  if (price_cents !== undefined) patch.price_cents = price_cents
+  if (content_body !== undefined) patch.content_body = content_body
+  if (visibility !== undefined) patch.visibility = visibility
+  if (content_uri !== undefined) patch.content_uri = content_uri
+  if (external_identifier !== undefined) patch.external_identifier = external_identifier
+  if (content_type !== undefined) patch.content_type = content_type
+
+  if (Object.keys(patch).length === 0) {
+    return NextResponse.json({ error: 'No fields to update' }, { status: 400 })
+  }
+
+  try {
+    const { storeId } = await requireAuth()
+    const client = await createMerchantClient()
+    const updated = await client.seller.content.update(storeId, contentId, patch)
+    return NextResponse.json({ ok: true, content: updated })
+  } catch (err) {
+    if (err instanceof AuthError) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+    }
+    if (err instanceof NotFoundError) {
+      return NextResponse.json({ error: 'Content not found' }, { status: 404 })
+    }
+    if (err instanceof LedewireError) {
+      const e = err as LedewireError
+      return NextResponse.json({ error: e.message }, { status: e.statusCode })
+    }
+    throw err
+  }
+}
+
+export async function DELETE(
+  _request: NextRequest,
+  { params }: { params: Promise<{ contentId: string }> },
+) {
+  const { contentId } = await params
+
+  try {
+    const { storeId } = await requireAuth()
+    const client = await createMerchantClient()
+    await client.seller.content.delete(storeId, contentId)
+    return NextResponse.json({ ok: true })
+  } catch (err) {
+    if (err instanceof AuthError) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+    }
+    if (err instanceof NotFoundError) {
+      return NextResponse.json({ error: 'Content not found' }, { status: 404 })
+    }
+    if (err instanceof LedewireError) {
+      const e = err as LedewireError
+      return NextResponse.json({ error: e.message }, { status: e.statusCode })
+    }
+    throw err
+  }
+}
