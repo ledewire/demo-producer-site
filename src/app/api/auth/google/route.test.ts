@@ -13,13 +13,11 @@ vi.mock('@/lib/session', () => ({ getSession: vi.fn() }))
 vi.mock('@/lib/config', () => ({
   config: {
     ledewireBaseUrl: 'https://test.ledewire.com',
-    googleClientId: 'test-client-id.apps.googleusercontent.com',
   },
 }))
 
 import { createClient } from '@ledewire/node'
 import { getSession } from '@/lib/session'
-import { config } from '@/lib/config'
 import { POST } from './route'
 
 /** Build a minimal, structurally-valid JWT with the given `aud` claim. */
@@ -32,6 +30,7 @@ function makeJwt(aud: string): string {
 const validToken = makeJwt('test-client-id.apps.googleusercontent.com')
 
 const mockLoginWithGoogle = vi.fn()
+const mockGetPublic = vi.fn()
 const mockSave = vi.fn()
 
 const mockTokens = {
@@ -51,11 +50,10 @@ function makeRequest(body: unknown) {
 beforeEach(() => {
   vi.clearAllMocks()
   mockSave.mockResolvedValue(undefined)
-  // Restore googleClientId in case a test changed it
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ;(config as any).googleClientId = 'test-client-id.apps.googleusercontent.com'
+  mockGetPublic.mockResolvedValue({ google_client_id: 'test-client-id.apps.googleusercontent.com' })
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   vi.mocked(createClient).mockReturnValue({
+    config: { getPublic: mockGetPublic },
     merchant: { auth: { loginWithGoogleAndListStores: mockLoginWithGoogle } },
   } as any)
 })
@@ -100,9 +98,8 @@ describe('POST /api/auth/google', () => {
     expect(body.error).toMatch(/audience/)
   })
 
-  it('skips audience validation when googleClientId is not configured', async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ;(config as any).googleClientId = undefined
+  it('skips audience validation when google_client_id is not in public config', async () => {
+    mockGetPublic.mockResolvedValueOnce({ google_client_id: undefined })
     const stores = [{ id: 'store-1', name: 'My Store' }]
     mockLoginWithGoogle.mockResolvedValueOnce({ tokens: mockTokens, stores })
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -115,6 +112,20 @@ describe('POST /api/auth/google', () => {
     expect(res.status).toBe(200)
     expect(body.ok).toBe(true)
     expect(mockLoginWithGoogle).toHaveBeenCalledWith({ id_token: 'any-token-value' })
+  })
+
+  it('skips audience validation when the public config fetch fails', async () => {
+    mockGetPublic.mockRejectedValueOnce(new Error('network error'))
+    const stores = [{ id: 'store-1', name: 'My Store' }]
+    mockLoginWithGoogle.mockResolvedValueOnce({ tokens: mockTokens, stores })
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    vi.mocked(getSession).mockResolvedValueOnce({ save: mockSave } as any)
+
+    const res = await POST(makeRequest({ id_token: 'any-token-value' }))
+    const body = await res.json()
+
+    expect(res.status).toBe(200)
+    expect(body.ok).toBe(true)
   })
 
   it('stores tokens and auto-selects the store when there is exactly one', async () => {

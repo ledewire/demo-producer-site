@@ -116,6 +116,19 @@ intermediate `vi.mocked(createMockClient(...), true)` call at the top level is a
 
 ---
 
+## ✅ NEW in 0.5.0 — `client.config.getPublic()` exposes `google_client_id`
+
+`client.config.getPublic()` (no auth required) now returns `{ google_client_id?: string }`.
+This eliminates the need for a `NEXT_PUBLIC_GOOGLE_CLIENT_ID` environment variable:
+
+- The login page fetches the value at render time to decide whether to show the Google Sign-In button.
+- The Google auth route uses it for the defence-in-depth audience check before delegating to the SDK.
+
+Both call sites previously required an env var to be configured manually; they now consume the
+value directly from the API with no additional deployment configuration.
+
+---
+
 ## ✅ FIXED in 0.5.0 — `MerchantInviteRequest.is_author` required but documented as defaulting to `true`
 
 `is_author` is now `optional` in `MerchantInviteRequest`. The explicit `is_author: true` at

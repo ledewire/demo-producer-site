@@ -32,18 +32,25 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'id_token is required' }, { status: 400 })
   }
 
-  // Validate that the token was issued for our Google Client ID before
-  // passing it to the SDK. Prevents cross-app token reuse.
-  const expectedAudience = config.googleClientId
-  if (expectedAudience) {
-    const audience = extractJwtAudience(id_token)
-    if (audience !== expectedAudience) {
-      return NextResponse.json({ error: 'Invalid token audience' }, { status: 400 })
+  const client = createClient({ baseUrl: config.ledewireBaseUrl })
+
+  // Defence-in-depth: validate the token audience before passing to the SDK.
+  // The expected client ID is fetched from the API's public config (no env var
+  // needed). If the fetch fails we skip the check — the SDK itself validates
+  // the token with Google's servers before accepting it.
+  try {
+    const { google_client_id } = await client.config.getPublic()
+    if (google_client_id) {
+      const audience = extractJwtAudience(id_token)
+      if (audience !== google_client_id) {
+        return NextResponse.json({ error: 'Invalid token audience' }, { status: 400 })
+      }
     }
+  } catch {
+    // Public config unavailable — proceed; the SDK will reject invalid tokens.
   }
 
   const session = await getSession()
-  const client = createClient({ baseUrl: config.ledewireBaseUrl })
 
   try {
     const { tokens, stores } = await client.merchant.auth.loginWithGoogleAndListStores({ id_token })

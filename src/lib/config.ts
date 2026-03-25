@@ -8,7 +8,10 @@
  *   import { config } from '@/lib/config'
  *   config.ledewireBaseUrl   // string
  *   config.sessionSecret     // string
- *   config.googleClientId    // string | undefined
+ *
+ * Note: the Google OAuth client ID is no longer stored here. It is fetched
+ * at request time via `client.config.getPublic()` — matching how the login
+ * page already works. `NEXT_PUBLIC_GOOGLE_CLIENT_ID` is no longer required.
  */
 
 function required(name: string): string {
@@ -30,8 +33,7 @@ function buildConfig() {
   const sessionSecret = required('SESSION_SECRET')
   if (sessionSecret.length < 32) {
     throw new Error(
-      `SESSION_SECRET must be at least 32 characters. ` +
-        `Generate one with: openssl rand -hex 32`,
+      `SESSION_SECRET must be at least 32 characters. ` + `Generate one with: openssl rand -hex 32`,
     )
   }
 
@@ -41,12 +43,6 @@ function buildConfig() {
 
     /** iron-session encryption secret (≥32 chars). */
     sessionSecret,
-
-    /**
-     * Google OAuth client ID rendered into the GSI script tag.
-     * Optional — Google Sign-In is disabled when absent.
-     */
-    googleClientId: optional('NEXT_PUBLIC_GOOGLE_CLIENT_ID'),
 
     /** true in production builds (used for secure-cookie flag). */
     isProduction: process.env.NODE_ENV === 'production',
