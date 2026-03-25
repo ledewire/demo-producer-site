@@ -20,17 +20,16 @@ export async function POST(request: NextRequest) {
   try {
     const { storeId } = await requireAuth()
     const client = await createMerchantClient()
-    const items = await client.seller.content.search(storeId, {
+    const { data } = await client.seller.content.search(storeId, {
       metadata: metadata as Record<string, unknown>,
     })
-    return NextResponse.json({ items })
+    return NextResponse.json({ items: data })
   } catch (err) {
     if (err instanceof AuthError) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
     }
     if (err instanceof LedewireError) {
-      const e = err as LedewireError
-      return NextResponse.json({ error: e.message }, { status: e.statusCode })
+      return NextResponse.json({ error: err.message }, { status: err.statusCode })
     }
     throw err
   }

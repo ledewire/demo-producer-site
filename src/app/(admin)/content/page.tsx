@@ -10,7 +10,7 @@ export default async function ContentListPage() {
 
   try {
     const client = await createMerchantClient()
-    const items = await client.seller.content.list(storeId)
+    const { data: items } = await client.seller.content.list(storeId)
 
     return (
       <div className="space-y-6">
@@ -27,7 +27,10 @@ export default async function ContentListPage() {
         {items.length === 0 ? (
           <div className="rounded-lg border border-dashed border-gray-300 p-12 text-center">
             <p className="text-sm text-gray-500">No content yet.</p>
-            <Link href="/content/new" className="mt-2 inline-block text-sm text-indigo-600 hover:underline">
+            <Link
+              href="/content/new"
+              className="mt-2 inline-block text-sm text-indigo-600 hover:underline"
+            >
               Create your first piece of content →
             </Link>
           </div>
@@ -39,8 +42,7 @@ export default async function ContentListPage() {
   } catch (err) {
     if (err instanceof AuthError) redirect('/login')
     if (err instanceof LedewireError) {
-      const e = err as LedewireError
-      return <p className="text-red-600 text-sm">API error: {e.message}</p>
+      return <p className="text-red-600 text-sm">API error: {err.message}</p>
     }
     throw err
   }

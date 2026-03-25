@@ -11,7 +11,7 @@ interface ContentItem {
   id: string
   title: string
   content_type: string
-  content_uri?: string
+  content_uri?: string | null
   price_cents: number
   visibility: string
   created_at: string
@@ -78,7 +78,10 @@ export default function ContentTable({ initialItems }: Props) {
         className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm placeholder-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
       />
       {error && (
-        <div role="alert" className="rounded bg-red-50 border border-red-200 p-3 text-sm text-red-700">
+        <div
+          role="alert"
+          className="rounded bg-red-50 border border-red-200 p-3 text-sm text-red-700"
+        >
           {error}
         </div>
       )}

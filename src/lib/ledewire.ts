@@ -32,7 +32,20 @@ export async function createMerchantClient() {
       await session.save()
     },
     async clearTokens(): Promise<void> {
-      await session.destroy()
+      // session.destroy() writes a cookie and requires a Route Handler or
+      // Server Action context. The SDK may call this from a Server Component
+      // (e.g. during background token refresh). We clear in-memory state here;
+      // requireAuth() will detect the missing token and redirect on the next
+      // request. The cookie is cleaned up properly by /api/auth/logout.
+      try {
+        await session.destroy()
+      } catch {
+        session.accessToken = undefined
+        session.refreshToken = undefined
+        session.expiresAt = undefined
+        session.storeId = undefined
+        session.stores = undefined
+      }
     },
   }
 

@@ -13,7 +13,10 @@ const mockSave = vi.fn()
 const defaultSession = {
   accessToken: 'tok',
   storeId: 'store-a',
-  stores: [{ store_id: 'store-a' }, { store_id: 'store-b' }],
+  stores: [
+    { id: 'store-a', name: 'Store A' },
+    { id: 'store-b', name: 'Store B' },
+  ],
   save: mockSave,
 }
 
@@ -61,7 +64,10 @@ describe('POST /api/stores/select', () => {
 
   it('returns 401 when the session has no access token', async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    vi.mocked(getSession).mockResolvedValueOnce({ ...defaultSession, accessToken: undefined } as any)
+    vi.mocked(getSession).mockResolvedValueOnce({
+      ...defaultSession,
+      accessToken: undefined,
+    } as any)
 
     const res = await POST(makeRequest({ storeId: 'store-a' }))
     const body = await res.json()

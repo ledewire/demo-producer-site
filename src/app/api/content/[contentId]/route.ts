@@ -22,8 +22,7 @@ export async function GET(
       return NextResponse.json({ error: 'Content not found' }, { status: 404 })
     }
     if (err instanceof LedewireError) {
-      const e = err as LedewireError
-      return NextResponse.json({ error: e.message }, { status: e.statusCode })
+      return NextResponse.json({ error: err.message }, { status: err.statusCode })
     }
     throw err
   }
@@ -42,7 +41,15 @@ export async function PATCH(
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
-  const { title, price_cents, content_body, visibility, content_uri, external_identifier, content_type } = body as {
+  const {
+    title,
+    price_cents,
+    content_body,
+    visibility,
+    content_uri,
+    external_identifier,
+    content_type,
+  } = body as {
     title?: string
     price_cents?: number
     content_body?: string
@@ -79,8 +86,7 @@ export async function PATCH(
       return NextResponse.json({ error: 'Content not found' }, { status: 404 })
     }
     if (err instanceof LedewireError) {
-      const e = err as LedewireError
-      return NextResponse.json({ error: e.message }, { status: e.statusCode })
+      return NextResponse.json({ error: err.message }, { status: err.statusCode })
     }
     throw err
   }
@@ -105,8 +111,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Content not found' }, { status: 404 })
     }
     if (err instanceof LedewireError) {
-      const e = err as LedewireError
-      return NextResponse.json({ error: e.message }, { status: e.statusCode })
+      return NextResponse.json({ error: err.message }, { status: err.statusCode })
     }
     throw err
   }

@@ -4,11 +4,7 @@ import { createMerchantClient } from '@/lib/ledewire'
 import { LedewireError, AuthError, NotFoundError } from '@ledewire/node'
 import EditContentForm from './EditContentForm'
 
-export default async function EditContentPage({
-  params,
-}: {
-  params: Promise<{ id: string }>
-}) {
+export default async function EditContentPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const { storeId } = await requireAuth()
 
@@ -17,7 +13,7 @@ export default async function EditContentPage({
     const item = await client.seller.content.get(storeId, id)
 
     return (
-      <div className="max-w-2xl space-y-6">
+      <div className="max-w-4xl space-y-6">
         <h1 className="text-2xl font-bold text-gray-900">Edit Content</h1>
         <EditContentForm id={id} item={item} />
       </div>
@@ -26,8 +22,7 @@ export default async function EditContentPage({
     if (err instanceof AuthError) redirect('/login')
     if (err instanceof NotFoundError) redirect('/content')
     if (err instanceof LedewireError) {
-      const e = err as LedewireError
-      return <p className="text-red-600 text-sm">API error: {e.message}</p>
+      return <p className="text-red-600 text-sm">API error: {err.message}</p>
     }
     throw err
   }

@@ -8,7 +8,7 @@ export interface SessionData {
   expiresAt?: number
   storeId?: string | null
   /** All stores the authenticated merchant can manage. */
-  stores?: Array<{ store_id: string }>
+  stores?: Array<{ id: string; name: string }>
 }
 
 function buildOptions(): SessionOptions {

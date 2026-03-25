@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient, LedewireError, AuthError } from '@ledewire/node'
-import type { TokenStorage, StoredTokens } from '@ledewire/node'
+import { createClient, LedewireError, AuthError, ForbiddenError } from '@ledewire/node'
 import { getSession } from '@/lib/session'
 import { config } from '@/lib/config'
 
@@ -44,64 +43,44 @@ export async function POST(request: NextRequest) {
   }
 
   const session = await getSession()
-
-  let capturedTokens: StoredTokens | null = null
-  const storage: TokenStorage = {
-    async getTokens() {
-      return capturedTokens
-    },
-    async setTokens(tokens: StoredTokens) {
-      capturedTokens = tokens
-    },
-    async clearTokens() {
-      capturedTokens = null
-    },
-  }
-
-  const client = createClient({
-    baseUrl: config.ledewireBaseUrl,
-    storage,
-  })
+  const client = createClient({ baseUrl: config.ledewireBaseUrl })
 
   try {
-    await client.merchant.auth.loginWithGoogle({ id_token })
+    const { tokens, stores } = await client.merchant.auth.loginWithGoogleAndListStores({ id_token })
 
-    if (!capturedTokens) {
-      return NextResponse.json(
-        { error: 'Authentication succeeded but no token was returned' },
-        { status: 500 },
-      )
-    }
-
-    const stores = await client.merchant.auth.listStores()
-    const storeId = stores[0]?.store_id ?? null
-
-    session.accessToken = capturedTokens.accessToken
-    session.refreshToken = capturedTokens.refreshToken
-    session.expiresAt = capturedTokens.expiresAt
-    session.storeId = storeId
-    session.stores = stores.map((s: { store_id: string }) => ({ store_id: s.store_id }))
+    session.accessToken = tokens.accessToken
+    session.refreshToken = tokens.refreshToken
+    session.expiresAt = tokens.expiresAt
+    // Auto-select only when there is exactly one store; for multiple stores
+    // the client will redirect to /select-store so the user can choose.
+    session.storeId = stores.length === 1 ? stores[0].id : null
+    session.stores = stores.map((s) => ({ id: s.id, name: s.name }))
     await session.save()
 
-    console.log('[auth/google] login succeeded', { storeId, storeCount: stores.length })
-    return NextResponse.json({ ok: true, storeId })
+    console.log('[auth/google] login succeeded', {
+      storeId: session.storeId,
+      storeCount: stores.length,
+    })
+    return NextResponse.json({
+      ok: true,
+      storeId: session.storeId,
+      requiresStoreSelection: stores.length > 1,
+    })
   } catch (err) {
+    if (err instanceof ForbiddenError) {
+      console.error('[auth/google] ForbiddenError', { message: err.message })
+      return NextResponse.json({ error: err.message }, { status: 403 })
+    }
     if (err instanceof AuthError) {
-      console.error('[auth/google] AuthError', {
-        message: (err as AuthError).message,
-        statusCode: (err as AuthError).statusCode,
-        raw: err,
-      })
+      console.error('[auth/google] AuthError', { message: err.message, statusCode: err.statusCode })
       return NextResponse.json({ error: 'Google authentication failed' }, { status: 401 })
     }
     if (err instanceof LedewireError) {
-      const e = err as LedewireError
       console.error('[auth/google] LedewireError', {
-        message: e.message,
-        statusCode: e.statusCode,
-        raw: err,
+        message: err.message,
+        statusCode: err.statusCode,
       })
-      return NextResponse.json({ error: e.message }, { status: e.statusCode })
+      return NextResponse.json({ error: err.message }, { status: err.statusCode })
     }
     console.error('[auth/google] unexpected error', err)
     throw err

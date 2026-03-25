@@ -11,8 +11,12 @@ import { getSession } from './session'
  */
 export async function requireAuth(): Promise<{ storeId: string }> {
   const session = await getSession()
-  if (!session.accessToken || !session.storeId) {
+  if (!session.accessToken) {
     redirect('/login')
+  }
+  if (!session.storeId) {
+    // Authenticated but no store selected — send to the store picker.
+    redirect('/select-store')
   }
   return { storeId: session.storeId }
 }

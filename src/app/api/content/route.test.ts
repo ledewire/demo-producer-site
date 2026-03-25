@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { NextRequest } from 'next/server'
-import { AuthError, LedewireError } from '@ledewire/node'
-import { makeContent, makeExternalContent } from '@/test/factories'
+import { AuthError, ForbiddenError, LedewireError } from '@ledewire/node'
+import { makeContent, makeExternalContent, makePagination } from '@/test/factories'
 
 // --- module mocks --------------------------------------------------------
 vi.mock('@/lib/ledewire', () => import('@/__mocks__/ledewire-client'))
@@ -33,8 +33,11 @@ beforeEach(() => {
 
 describe('GET /api/content', () => {
   it('returns the content list from the SDK', async () => {
-    const items = [makeContent({ id: '1', title: 'Article A' }), makeContent({ id: '2', title: 'Article B' })]
-    mockSellerContent.list.mockResolvedValueOnce(items)
+    const items = [
+      makeContent({ id: '1', title: 'Article A' }),
+      makeContent({ id: '2', title: 'Article B' }),
+    ]
+    mockSellerContent.list.mockResolvedValueOnce({ data: items, pagination: makePagination(2) })
 
     const res = await GET(makeRequest())
     const body = await res.json()
@@ -46,7 +49,7 @@ describe('GET /api/content', () => {
   })
 
   it('returns an empty array when the store has no content', async () => {
-    mockSellerContent.list.mockResolvedValueOnce([])
+    mockSellerContent.list.mockResolvedValueOnce({ data: [], pagination: makePagination(0) })
 
     const res = await GET(makeRequest())
     const body = await res.json()
@@ -172,5 +175,36 @@ describe('POST /api/content', () => {
     expect(res.status).toBe(400)
     expect(body.error).toMatch(/content_uri/)
     expect(mockSellerContent.create).not.toHaveBeenCalled()
+  })
+
+  it('returns 400 when markdown content is missing content_body', async () => {
+    const res = await POST(
+      makeRequest({ title: 'No Body', price_cents: 500, content_type: 'markdown' }, 'POST'),
+    )
+    const body = await res.json()
+
+    expect(res.status).toBe(400)
+    expect(body.error).toMatch(/content_body/)
+    expect(mockSellerContent.create).not.toHaveBeenCalled()
+  })
+
+  it('returns the SDK status code on a LedewireError during create', async () => {
+    mockSellerContent.create.mockRejectedValueOnce(new LedewireError('unprocessable', 422))
+
+    const res = await POST(makeRequest(validBody, 'POST'))
+    const body = await res.json()
+
+    expect(res.status).toBe(422)
+    expect(body.error).toBe('unprocessable')
+  })
+
+  it('returns 403 on a ForbiddenError during create', async () => {
+    mockSellerContent.create.mockRejectedValueOnce(new ForbiddenError('forbidden', 403))
+
+    const res = await POST(makeRequest(validBody, 'POST'))
+    const body = await res.json()
+
+    expect(res.status).toBe(403)
+    expect(body.error).toBe('forbidden')
   })
 })

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { NextRequest } from 'next/server'
 import { AuthError, LedewireError } from '@ledewire/node'
-import { makeContent } from '@/test/factories'
+import { makeContent, makePagination } from '@/test/factories'
 
 vi.mock('@/lib/ledewire', () => import('@/__mocks__/ledewire-client'))
 vi.mock('@/lib/auth', () => ({
@@ -28,7 +28,7 @@ beforeEach(() => {
 describe('POST /api/content/search', () => {
   it('returns items matching the metadata query', async () => {
     const items = [makeContent({ title: 'Tagged Article' })]
-    mockSellerContent.search.mockResolvedValueOnce(items)
+    mockSellerContent.search.mockResolvedValueOnce({ data: items, pagination: makePagination(1) })
 
     const res = await POST(makeRequest({ metadata: { tag: 'featured' } }))
     const body = await res.json()

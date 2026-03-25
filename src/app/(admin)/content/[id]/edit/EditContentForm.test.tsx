@@ -45,7 +45,9 @@ describe('EditContentForm', () => {
   it('decodes a base64 content body correctly', () => {
     const item = makeContent({ content_body: btoa(unescape(encodeURIComponent('# Unicode 🎉'))) })
     render(<EditContentForm id="c1" item={item} />)
-    expect((screen.getByLabelText(/markdown source/i) as HTMLTextAreaElement).value).toBe('# Unicode 🎉')
+    expect((screen.getByLabelText(/markdown source/i) as HTMLTextAreaElement).value).toBe(
+      '# Unicode 🎉',
+    )
   })
 
   it('sends a PATCH request with updated values on submit', async () => {
@@ -171,5 +173,65 @@ describe('EditContentForm', () => {
     expect(body.content_type).toBe('external_ref')
     expect(body.content_uri).toBe('https://vimeo.com/newvideo')
     expect(body).not.toHaveProperty('content_body')
+  })
+
+  it('toggling from markdown to external_ref shows URI fields and hides markdown editor', async () => {
+    render(<EditContentForm id="c1" item={defaultItem} />)
+
+    // Initially markdown editor is visible
+    expect(screen.getByLabelText(/markdown source/i)).toBeInTheDocument()
+    expect(screen.queryByLabelText(/content uri/i)).not.toBeInTheDocument()
+
+    await userEvent.selectOptions(screen.getByLabelText(/content type/i), 'external_ref')
+
+    expect(screen.queryByLabelText(/markdown source/i)).not.toBeInTheDocument()
+    expect(screen.getByLabelText(/content uri/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/external identifier/i)).toBeInTheDocument()
+  })
+
+  it('toggling from external_ref to markdown shows markdown editor and hides URI fields', async () => {
+    const externalItem = makeExternalContent({ id: 'c2' })
+    render(<EditContentForm id="c2" item={externalItem} />)
+
+    // Initially URI fields are visible
+    expect(screen.getByLabelText(/content uri/i)).toBeInTheDocument()
+    expect(screen.queryByLabelText(/markdown source/i)).not.toBeInTheDocument()
+
+    await userEvent.selectOptions(screen.getByLabelText(/content type/i), 'markdown')
+
+    expect(screen.queryByLabelText(/content uri/i)).not.toBeInTheDocument()
+    expect(screen.getByLabelText(/markdown source/i)).toBeInTheDocument()
+  })
+
+  it('submitting after toggle to external_ref sends content_uri, not content_body', async () => {
+    mockFetch.mockResolvedValueOnce({ ok: true, status: 200, json: async () => ({ ok: true }) })
+    render(<EditContentForm id="c1" item={defaultItem} />)
+
+    await userEvent.selectOptions(screen.getByLabelText(/content type/i), 'external_ref')
+    await userEvent.type(screen.getByLabelText(/content uri/i), 'https://example.com/video')
+
+    await userEvent.click(screen.getByRole('button', { name: /save changes/i }))
+
+    await waitFor(() => expect(mockFetch).toHaveBeenCalled())
+    const body = JSON.parse((mockFetch.mock.calls[0][1] as RequestInit).body as string)
+    expect(body.content_type).toBe('external_ref')
+    expect(body.content_uri).toBe('https://example.com/video')
+    expect(body).not.toHaveProperty('content_body')
+  })
+
+  it('submitting after toggle to markdown sends content_body, not content_uri', async () => {
+    const externalItem = makeExternalContent({ id: 'c2' })
+    mockFetch.mockResolvedValueOnce({ ok: true, status: 200, json: async () => ({ ok: true }) })
+    render(<EditContentForm id="c2" item={externalItem} />)
+
+    await userEvent.selectOptions(screen.getByLabelText(/content type/i), 'markdown')
+
+    await userEvent.click(screen.getByRole('button', { name: /save changes/i }))
+
+    await waitFor(() => expect(mockFetch).toHaveBeenCalled())
+    const body = JSON.parse((mockFetch.mock.calls[0][1] as RequestInit).body as string)
+    expect(body.content_type).toBe('markdown')
+    expect(typeof body.content_body).toBe('string')
+    expect(body).not.toHaveProperty('content_uri')
   })
 })

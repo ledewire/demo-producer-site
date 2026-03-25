@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { NextRequest } from 'next/server'
-import { AuthError, LedewireError, NotFoundError } from '@ledewire/node'
+import { AuthError, ForbiddenError, LedewireError, NotFoundError } from '@ledewire/node'
 
 vi.mock('@/lib/ledewire', () => import('@/__mocks__/ledewire-client'))
 vi.mock('@/lib/auth', () => ({
@@ -212,7 +212,10 @@ describe('DELETE /api/content/[contentId]', () => {
 
 describe('PATCH /api/content/[contentId] — external_ref fields', () => {
   it('patches content_uri and external_identifier', async () => {
-    const updated = makeExternalContent({ id: 'content-001', content_uri: 'https://vimeo.com/updated' })
+    const updated = makeExternalContent({
+      id: 'content-001',
+      content_uri: 'https://vimeo.com/updated',
+    })
     mockSellerContent.update.mockResolvedValueOnce(updated)
 
     const req = new NextRequest('http://localhost/api/content/content-001', {
@@ -231,5 +234,20 @@ describe('PATCH /api/content/[contentId] — external_ref fields', () => {
     expect(call.external_identifier).toBe('vimeo:updated')
     expect(call.content_type).toBe('external_ref')
     expect(Object.keys(call)).not.toContain('content_body')
+  })
+})
+
+// ── ForbiddenError handling ───────────────────────────────────────────────
+
+describe('GET /api/content/[contentId] — ForbiddenError', () => {
+  it('returns 403 when the SDK throws a ForbiddenError', async () => {
+    mockSellerContent.get.mockRejectedValueOnce(new ForbiddenError('forbidden', 403))
+
+    const req = new NextRequest('http://localhost/api/content/content-001')
+    const res = await GET(req, makeParams('content-001'))
+    const body = await res.json()
+
+    expect(res.status).toBe(403)
+    expect(body.error).toBe('forbidden')
   })
 })

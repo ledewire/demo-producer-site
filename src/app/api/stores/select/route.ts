@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
   // Only allow stores that were listed at login time — prevents arbitrary
   // storeId injection that could access another merchant's data.
   const knownStores = session.stores ?? []
-  const isValid = knownStores.some((s) => s.store_id === storeId)
+  const isValid = knownStores.some((s) => s.id === storeId)
   if (!isValid) {
     return NextResponse.json({ error: 'Invalid store' }, { status: 400 })
   }
