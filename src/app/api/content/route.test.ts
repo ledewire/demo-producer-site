@@ -5,12 +5,12 @@ import { makeContent, makeExternalContent, makePagination } from '@/test/factori
 
 // --- module mocks --------------------------------------------------------
 vi.mock('@/lib/ledewire', () => import('@/__mocks__/ledewire-client'))
-vi.mock('@/lib/auth', () => ({
-  requireAuth: vi.fn().mockResolvedValue({ storeId: 'store-abc' }),
+vi.mock('@/lib/session', () => ({
+  getSession: vi.fn().mockResolvedValue({ accessToken: 'tok', storeId: 'store-abc' }),
 }))
 
 import { mockSellerContent } from '@/__mocks__/ledewire-client'
-import { requireAuth } from '@/lib/auth'
+import { getSession } from '@/lib/session'
 import { GET, POST } from './route'
 
 // -------------------------------------------------------------------------
@@ -26,7 +26,7 @@ function makeRequest(body?: unknown, method = 'GET') {
 
 beforeEach(() => {
   vi.clearAllMocks()
-  vi.mocked(requireAuth).mockResolvedValue({ storeId: 'store-abc' })
+  vi.mocked(getSession).mockResolvedValue({ accessToken: 'tok', storeId: 'store-abc' } as any)
 })
 
 // ── GET /api/content ─────────────────────────────────────────────────────
@@ -59,7 +59,7 @@ describe('GET /api/content', () => {
   })
 
   it('returns 401 when the session is unauthenticated', async () => {
-    vi.mocked(requireAuth).mockRejectedValueOnce(new AuthError('Unauthorized', 401))
+    vi.mocked(getSession).mockResolvedValueOnce({} as any)
 
     const res = await GET(makeRequest())
     const body = await res.json()
@@ -130,7 +130,7 @@ describe('POST /api/content', () => {
   })
 
   it('returns 401 on AuthError', async () => {
-    vi.mocked(requireAuth).mockRejectedValueOnce(new AuthError('Unauthorized', 401))
+    mockSellerContent.create.mockRejectedValueOnce(new AuthError('Unauthorized', 401))
 
     const res = await POST(makeRequest(validBody, 'POST'))
     const body = await res.json()

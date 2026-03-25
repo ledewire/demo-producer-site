@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { LedewireError, AuthError } from '@ledewire/node'
-import { requireAuth } from '@/lib/auth'
+import { LedewireError, AuthError, ForbiddenError } from '@ledewire/node'
+import { getSession } from '@/lib/session'
 import { createMerchantClient } from '@/lib/ledewire'
 
 export async function POST(request: NextRequest) {
@@ -18,7 +18,11 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const { storeId } = await requireAuth()
+    const session = await getSession()
+    if (!session.accessToken || !session.storeId) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+    }
+    const { storeId } = session
     const client = await createMerchantClient()
     const { data } = await client.seller.content.search(storeId, {
       metadata: metadata as Record<string, unknown>,
@@ -27,6 +31,9 @@ export async function POST(request: NextRequest) {
   } catch (err) {
     if (err instanceof AuthError) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+    }
+    if (err instanceof ForbiddenError) {
+      return NextResponse.json({ error: err.message }, { status: 403 })
     }
     if (err instanceof LedewireError) {
       return NextResponse.json({ error: err.message }, { status: err.statusCode })

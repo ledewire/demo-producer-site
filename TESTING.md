@@ -33,8 +33,9 @@ npm run test:coverage
 | [src/app/(auth)/login/LoginForm.test.tsx](<src/app/(auth)/login/LoginForm.test.tsx>)                                           | Email/password submit, redirects, error display, loading state, Google credential callback                    |
 | [src/app/(auth)/select-store/StorePicker.test.tsx](<src/app/(auth)/select-store/StorePicker.test.tsx>)                         | Store button click, loading state, error display, redirect, network error, empty state                        |
 | [src/app/(admin)/content/new/page.test.tsx](<src/app/(admin)/content/new/page.test.tsx>)                                       | Markdown + external_ref submission, price validation, error/401 handling, content-type toggle                 |
+| [src/components/StoreSelector.test.tsx](src/components/StoreSelector.test.tsx)                                                 | Option rendering, default selection, POST + navigate on success, disabled state, error display, network error |
 
-**Overall coverage (as of last run):** ~77% lines · ~87% branch · ~76% function
+**Overall coverage (as of last run):** ~78% lines · ~88% branch · ~77% function
 
 ---
 
@@ -46,6 +47,6 @@ npm run test:coverage
 | --------------------- | -------------------------------------------------------------------------------- |
 | `NavBar.tsx`          | Mostly static rendering; not much to assert                                      |
 | `LogoutButton.tsx`    | Calls `/api/auth/logout` and redirects — one happy-path test would be sufficient |
-| `StoreSelector.tsx`   | POSTs + `router.refresh()`; worth a smoke test                                   |
+| `StoreSelector.tsx`   | ✅ Now covered by `StoreSelector.test.tsx`                                       |
 | `SalesTable.test.tsx` | Missing previous-page navigation; minor                                          |
 | `Pagination.test.tsx` | Rapid click / keyboard nav; very low value                                       |

@@ -131,10 +131,11 @@ export default function UserList({ initialUsers }: { initialUsers: User[] }) {
   const router = useRouter()
   const [users, setUsers] = useState<User[]>(initialUsers)
   const [removing, setRemoving] = useState<string | null>(null)
+  const [pendingRemoveId, setPendingRemoveId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   const handleRemove = async (userId: string) => {
-    if (!confirm('Remove this author from your store?')) return
+    setPendingRemoveId(null)
     setRemoving(userId)
     setError(null)
     try {
@@ -149,6 +150,8 @@ export default function UserList({ initialUsers }: { initialUsers: User[] }) {
       } else {
         setUsers((prev) => prev.filter((u) => u.id !== userId))
       }
+    } catch {
+      setError('Network error — please try again')
     } finally {
       setRemoving(null)
     }
@@ -187,13 +190,33 @@ export default function UserList({ initialUsers }: { initialUsers: User[] }) {
                   />
                 </div>
               )}
-              <button
-                onClick={() => handleRemove(user.id)}
-                disabled={removing === user.id}
-                className="shrink-0 text-xs text-red-500 hover:text-red-700 disabled:opacity-50"
-              >
-                {removing === user.id ? 'Removing…' : 'Remove'}
-              </button>
+              {pendingRemoveId === user.id ? (
+                <span className="inline-flex items-center gap-2">
+                  <span className="text-xs text-gray-500">Remove?</span>
+                  <button
+                    onClick={() => handleRemove(user.id)}
+                    disabled={removing === user.id}
+                    className="text-xs text-red-500 hover:text-red-700 font-medium disabled:opacity-50"
+                  >
+                    {removing === user.id ? 'Removing…' : 'Yes'}
+                  </button>
+                  <button
+                    onClick={() => setPendingRemoveId(null)}
+                    disabled={removing === user.id}
+                    className="text-xs text-gray-400 hover:text-gray-600 disabled:opacity-50"
+                  >
+                    No
+                  </button>
+                </span>
+              ) : (
+                <button
+                  onClick={() => setPendingRemoveId(user.id)}
+                  disabled={removing === user.id}
+                  className="shrink-0 text-xs text-red-500 hover:text-red-700 disabled:opacity-50"
+                >
+                  {removing === user.id ? 'Removing…' : 'Remove'}
+                </button>
+              )}
             </li>
           ))}
         </ul>

@@ -17,11 +17,9 @@ vi.mock('next/link', () => ({
 
 const mockFetch = vi.fn()
 vi.stubGlobal('fetch', mockFetch)
-vi.stubGlobal('confirm', vi.fn().mockReturnValue(true))
 
 beforeEach(() => {
   vi.clearAllMocks()
-  vi.mocked(confirm).mockReturnValue(true)
 })
 
 function makeItems() {
@@ -57,12 +55,18 @@ describe('ContentTable', () => {
   })
 
   it('prompts for confirmation before deleting', async () => {
-    vi.mocked(confirm).mockReturnValueOnce(false)
     render(<ContentTable initialItems={makeItems()} />)
 
     await userEvent.click(screen.getByRole('button', { name: /delete article one/i }))
 
-    expect(confirm).toHaveBeenCalledWith(expect.stringContaining('Article One'))
+    // Inline confirmation UI should appear
+    expect(screen.getByText('Delete?')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /confirm delete article one/i })).toBeInTheDocument()
+
+    // Clicking No cancels without calling the API
+    await userEvent.click(screen.getByRole('button', { name: /cancel delete article one/i }))
+
+    expect(screen.queryByText('Delete?')).not.toBeInTheDocument()
     expect(mockFetch).not.toHaveBeenCalled()
   })
 
@@ -71,6 +75,7 @@ describe('ContentTable', () => {
     render(<ContentTable initialItems={makeItems()} />)
 
     await userEvent.click(screen.getByRole('button', { name: /delete article one/i }))
+    await userEvent.click(screen.getByRole('button', { name: /confirm delete article one/i }))
 
     await waitFor(() => {
       expect(screen.queryByText('Article One')).not.toBeInTheDocument()
@@ -88,6 +93,7 @@ describe('ContentTable', () => {
     render(<ContentTable initialItems={makeItems()} />)
 
     await userEvent.click(screen.getByRole('button', { name: /delete article one/i }))
+    await userEvent.click(screen.getByRole('button', { name: /confirm delete article one/i }))
 
     await waitFor(() => {
       expect(screen.getByRole('alert')).toHaveTextContent('Server error')
@@ -101,6 +107,7 @@ describe('ContentTable', () => {
     render(<ContentTable initialItems={makeItems()} />)
 
     await userEvent.click(screen.getByRole('button', { name: /delete article one/i }))
+    await userEvent.click(screen.getByRole('button', { name: /confirm delete article one/i }))
 
     await waitFor(() => {
       expect(screen.getByRole('alert')).toHaveTextContent('Network error')
@@ -116,12 +123,15 @@ describe('ContentTable', () => {
     )
     render(<ContentTable initialItems={makeItems()} />)
 
-    const button = screen.getByRole('button', { name: /delete article one/i })
-    await userEvent.click(button)
+    await userEvent.click(screen.getByRole('button', { name: /delete article one/i }))
 
-    // Button should be disabled while the request is in-flight
-    expect(button).toBeDisabled()
-    expect(button).toHaveTextContent('Deleting…')
+    // Confirm the delete to initiate the request
+    await userEvent.click(screen.getByRole('button', { name: /confirm delete article one/i }))
+
+    // After confirming, the button re-renders in disabled/deleting state
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /delete article one/i })).toBeDisabled()
+    })
 
     resolveFetch()
     await waitFor(() => expect(screen.queryByText('Article One')).not.toBeInTheDocument())

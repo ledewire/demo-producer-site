@@ -1,15 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { NextRequest } from 'next/server'
-import { AuthError, LedewireError } from '@ledewire/node'
+import { LedewireError } from '@ledewire/node'
 import { makeContent, makePagination } from '@/test/factories'
 
 vi.mock('@/lib/ledewire', () => import('@/__mocks__/ledewire-client'))
-vi.mock('@/lib/auth', () => ({
-  requireAuth: vi.fn().mockResolvedValue({ storeId: 'store-abc' }),
+vi.mock('@/lib/session', () => ({
+  getSession: vi.fn().mockResolvedValue({ accessToken: 'tok', storeId: 'store-abc' }),
 }))
 
 import { mockSellerContent } from '@/__mocks__/ledewire-client'
-import { requireAuth } from '@/lib/auth'
+import { getSession } from '@/lib/session'
 import { POST } from './route'
 
 function makeRequest(body: unknown) {
@@ -22,7 +22,7 @@ function makeRequest(body: unknown) {
 
 beforeEach(() => {
   vi.clearAllMocks()
-  vi.mocked(requireAuth).mockResolvedValue({ storeId: 'store-abc' })
+  vi.mocked(getSession).mockResolvedValue({ accessToken: 'tok', storeId: 'store-abc' } as any)
 })
 
 describe('POST /api/content/search', () => {
@@ -61,7 +61,7 @@ describe('POST /api/content/search', () => {
   })
 
   it('returns 401 when not authenticated', async () => {
-    vi.mocked(requireAuth).mockRejectedValueOnce(new AuthError('Unauthorized', 401))
+    vi.mocked(getSession).mockResolvedValueOnce({} as any)
     const res = await POST(makeRequest({ metadata: {} }))
     const body = await res.json()
     expect(res.status).toBe(401)

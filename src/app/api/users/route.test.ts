@@ -3,12 +3,12 @@ import { NextRequest } from 'next/server'
 import { AuthError, LedewireError } from '@ledewire/node'
 
 vi.mock('@/lib/ledewire', () => import('@/__mocks__/ledewire-client'))
-vi.mock('@/lib/auth', () => ({
-  requireAuth: vi.fn().mockResolvedValue({ storeId: 'store-abc' }),
+vi.mock('@/lib/session', () => ({
+  getSession: vi.fn().mockResolvedValue({ accessToken: 'tok', storeId: 'store-abc' }),
 }))
 
 import { mockMerchantUsers } from '@/__mocks__/ledewire-client'
-import { requireAuth } from '@/lib/auth'
+import { getSession } from '@/lib/session'
 import { POST } from './route'
 import { makeMerchantUser } from '@/test/factories'
 
@@ -22,7 +22,7 @@ function makeRequest(body: unknown) {
 
 beforeEach(() => {
   vi.clearAllMocks()
-  vi.mocked(requireAuth).mockResolvedValue({ storeId: 'store-abc' })
+  vi.mocked(getSession).mockResolvedValue({ accessToken: 'tok', storeId: 'store-abc' } as any)
 })
 
 describe('POST /api/users', () => {
@@ -120,7 +120,7 @@ describe('POST /api/users', () => {
   })
 
   it('returns 401 on AuthError', async () => {
-    vi.mocked(requireAuth).mockRejectedValueOnce(new AuthError('Unauthorized', 401))
+    mockMerchantUsers.invite.mockRejectedValueOnce(new AuthError('Unauthorized', 401))
 
     const res = await POST(makeRequest({ email: 'a@b.com' }))
     const body = await res.json()

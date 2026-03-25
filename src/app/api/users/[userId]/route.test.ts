@@ -1,14 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { NextRequest } from 'next/server'
-import { AuthError, ForbiddenError, LedewireError } from '@ledewire/node'
+import { ForbiddenError, LedewireError } from '@ledewire/node'
 
 vi.mock('@/lib/ledewire', () => import('@/__mocks__/ledewire-client'))
-vi.mock('@/lib/auth', () => ({
-  requireAuth: vi.fn().mockResolvedValue({ storeId: 'store-abc' }),
+vi.mock('@/lib/session', () => ({
+  getSession: vi.fn().mockResolvedValue({ accessToken: 'tok', storeId: 'store-abc' }),
 }))
 
 import { mockMerchantUsers } from '@/__mocks__/ledewire-client'
-import { requireAuth } from '@/lib/auth'
+import { getSession } from '@/lib/session'
 import { PATCH, DELETE } from './route'
 import { makeMerchantUser } from '@/test/factories'
 
@@ -26,7 +26,7 @@ function patchRequest(userId: string, body: unknown) {
 
 beforeEach(() => {
   vi.clearAllMocks()
-  vi.mocked(requireAuth).mockResolvedValue({ storeId: 'store-abc' })
+  vi.mocked(getSession).mockResolvedValue({ accessToken: 'tok', storeId: 'store-abc' } as any)
 })
 
 // ── PATCH /api/users/[userId] ─────────────────────────────────────────────
@@ -89,7 +89,7 @@ describe('PATCH /api/users/[userId]', () => {
   })
 
   it('returns 401 when unauthenticated', async () => {
-    vi.mocked(requireAuth).mockRejectedValueOnce(new AuthError('Unauthorized', 401))
+    vi.mocked(getSession).mockResolvedValueOnce({} as any)
 
     const res = await PATCH(patchRequest('su-1', { author_fee_bps: 1000 }), makeParams('su-1'))
     const body = await res.json()
@@ -125,7 +125,7 @@ describe('DELETE /api/users/[userId]', () => {
   })
 
   it('returns 401 when unauthenticated', async () => {
-    vi.mocked(requireAuth).mockRejectedValueOnce(new AuthError('Unauthorized', 401))
+    vi.mocked(getSession).mockResolvedValueOnce({} as any)
 
     const req = new NextRequest('http://localhost/api/users/su-1', { method: 'DELETE' })
     const res = await DELETE(req, makeParams('su-1'))

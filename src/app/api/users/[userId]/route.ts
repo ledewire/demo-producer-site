@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { LedewireError, AuthError } from '@ledewire/node'
-import { requireAuth } from '@/lib/auth'
+import { LedewireError, AuthError, ForbiddenError } from '@ledewire/node'
+import { getSession } from '@/lib/session'
 import { createMerchantClient } from '@/lib/ledewire'
 
 export async function PATCH(
@@ -28,7 +28,11 @@ export async function PATCH(
   }
 
   try {
-    const { storeId } = await requireAuth()
+    const session = await getSession()
+    if (!session.accessToken || !session.storeId) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+    }
+    const { storeId } = session
     const client = await createMerchantClient()
 
     const updated = await client.merchant.users.update(storeId, userId, {
@@ -39,6 +43,9 @@ export async function PATCH(
   } catch (err) {
     if (err instanceof AuthError) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+    }
+    if (err instanceof ForbiddenError) {
+      return NextResponse.json({ error: err.message }, { status: 403 })
     }
     if (err instanceof LedewireError) {
       return NextResponse.json({ error: err.message }, { status: err.statusCode })
@@ -54,7 +61,11 @@ export async function DELETE(
   const { userId } = await params
 
   try {
-    const { storeId } = await requireAuth()
+    const session = await getSession()
+    if (!session.accessToken || !session.storeId) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+    }
+    const { storeId } = session
     const client = await createMerchantClient()
 
     await client.merchant.users.remove(storeId, userId)

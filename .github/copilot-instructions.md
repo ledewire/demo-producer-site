@@ -37,9 +37,10 @@ No API key is stored server-side — all SDK calls use the merchant JWT from the
 
 - **SDK mock:** `vi.mock('@/lib/ledewire', () => import('@/__mocks__/ledewire-client'))`
   The mock uses `createMockClient(vi.fn)` from `@ledewire/node/testing`, wrapped with `vi.mocked(..., true)` to surface `mockResolvedValueOnce` etc.
-- **Session mock:** `vi.mock('@/lib/session', () => ({ getSession: vi.fn() }))` — factory body MUST NOT reference outer-scope variables (vi.mock is hoisted)
+- **Session mock (route tests):** `vi.mock('@/lib/session', () => ({ getSession: vi.fn().mockResolvedValue({ accessToken: 'tok', storeId: 'store-abc' } as any) }))` — use `getSession` directly in route handler tests; never mock `@/lib/auth` in route tests
+- **Session mock (auth route tests):** `vi.mock('@/lib/session', () => ({ getSession: vi.fn() }))` with manual `mockResolvedValueOnce({ save: mockSave } as any)` per test
 - **Paginated list mocks** must return `{ data: [...], pagination: makePagination(n) }` — never a bare array
-- `next/navigation` must always be mocked in client component tests
+- `next/navigation` must always be mocked in client component tests; include `usePathname` when the component calls it
 - Forms with JS validation: add `noValidate` to `<form>` to prevent browser-native constraint validation from interfering
 
 ### Session data shape

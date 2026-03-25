@@ -1,14 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { NextRequest } from 'next/server'
-import { AuthError, ForbiddenError, LedewireError, NotFoundError } from '@ledewire/node'
+import { ForbiddenError, LedewireError, NotFoundError } from '@ledewire/node'
 
 vi.mock('@/lib/ledewire', () => import('@/__mocks__/ledewire-client'))
-vi.mock('@/lib/auth', () => ({
-  requireAuth: vi.fn().mockResolvedValue({ storeId: 'store-abc' }),
+vi.mock('@/lib/session', () => ({
+  getSession: vi.fn().mockResolvedValue({ accessToken: 'tok', storeId: 'store-abc' }),
 }))
 
 import { mockSellerContent } from '@/__mocks__/ledewire-client'
-import { requireAuth } from '@/lib/auth'
+import { getSession } from '@/lib/session'
 import { GET, PATCH, DELETE } from './route'
 import { makeContent, makeExternalContent } from '@/test/factories'
 
@@ -18,7 +18,7 @@ function makeParams(contentId: string) {
 
 beforeEach(() => {
   vi.clearAllMocks()
-  vi.mocked(requireAuth).mockResolvedValue({ storeId: 'store-abc' })
+  vi.mocked(getSession).mockResolvedValue({ accessToken: 'tok', storeId: 'store-abc' } as any)
 })
 
 // ── GET /api/content/[contentId] ─────────────────────────────────────────
@@ -38,7 +38,7 @@ describe('GET /api/content/[contentId]', () => {
   })
 
   it('returns 401 when unauthenticated', async () => {
-    vi.mocked(requireAuth).mockRejectedValueOnce(new AuthError('Unauthorized', 401))
+    vi.mocked(getSession).mockResolvedValueOnce({} as any)
 
     const req = new NextRequest('http://localhost/api/content/content-001')
     const res = await GET(req, makeParams('content-001'))
@@ -125,7 +125,7 @@ describe('PATCH /api/content/[contentId]', () => {
   })
 
   it('returns 401 when unauthenticated', async () => {
-    vi.mocked(requireAuth).mockRejectedValueOnce(new AuthError('Unauthorized', 401))
+    vi.mocked(getSession).mockResolvedValueOnce({} as any)
 
     const req = new NextRequest('http://localhost/api/content/content-001', {
       method: 'PATCH',
@@ -168,7 +168,7 @@ describe('DELETE /api/content/[contentId]', () => {
   })
 
   it('returns 401 when unauthenticated', async () => {
-    vi.mocked(requireAuth).mockRejectedValueOnce(new AuthError('Unauthorized', 401))
+    vi.mocked(getSession).mockResolvedValueOnce({} as any)
 
     const req = new NextRequest('http://localhost/api/content/content-001', { method: 'DELETE' })
     const res = await DELETE(req, makeParams('content-001'))

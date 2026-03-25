@@ -1,5 +1,6 @@
 import { getIronSession, type SessionOptions } from 'iron-session'
 import { cookies } from 'next/headers'
+import { cache } from 'react'
 import { config } from './config'
 
 export interface SessionData {
@@ -29,6 +30,6 @@ function buildOptions(): SessionOptions {
   }
 }
 
-export async function getSession() {
+export const getSession = cache(async () => {
   return getIronSession<SessionData>(await cookies(), buildOptions())
-}
+})

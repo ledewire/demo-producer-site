@@ -26,6 +26,7 @@ export default function ContentTable({ initialItems }: Props) {
   const [items, setItems] = useState(initialItems)
   const [query, setQuery] = useState('')
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [page, setPage] = useState(1)
 
@@ -40,9 +41,8 @@ export default function ContentTable({ initialItems }: Props) {
     setPage(1)
   }
 
-  const handleDelete = async (id: string, title: string) => {
-    if (!confirm(`Delete "${title}"? This cannot be undone.`)) return
-
+  const handleDelete = async (id: string) => {
+    setPendingDeleteId(null)
     setDeletingId(id)
     setError(null)
 
@@ -133,14 +133,36 @@ export default function ContentTable({ initialItems }: Props) {
                   >
                     Edit
                   </Link>
-                  <button
-                    onClick={() => handleDelete(item.id, item.title)}
-                    disabled={deletingId === item.id}
-                    aria-label={`Delete ${item.title}`}
-                    className="text-red-600 hover:text-red-800 text-sm font-medium disabled:opacity-50"
-                  >
-                    {deletingId === item.id ? 'Deleting…' : 'Delete'}
-                  </button>
+                  {pendingDeleteId === item.id ? (
+                    <span className="inline-flex items-center gap-2">
+                      <span className="text-xs text-gray-500">Delete?</span>
+                      <button
+                        onClick={() => handleDelete(item.id)}
+                        disabled={deletingId === item.id}
+                        aria-label={`Confirm delete ${item.title}`}
+                        className="text-red-600 hover:text-red-800 text-sm font-medium disabled:opacity-50"
+                      >
+                        {deletingId === item.id ? 'Deleting…' : 'Yes'}
+                      </button>
+                      <button
+                        onClick={() => setPendingDeleteId(null)}
+                        disabled={deletingId === item.id}
+                        aria-label={`Cancel delete ${item.title}`}
+                        className="text-gray-500 hover:text-gray-700 text-sm disabled:opacity-50"
+                      >
+                        No
+                      </button>
+                    </span>
+                  ) : (
+                    <button
+                      onClick={() => setPendingDeleteId(item.id)}
+                      disabled={deletingId === item.id}
+                      aria-label={`Delete ${item.title}`}
+                      className="text-red-600 hover:text-red-800 text-sm font-medium disabled:opacity-50"
+                    >
+                      {deletingId === item.id ? 'Deleting…' : 'Delete'}
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}

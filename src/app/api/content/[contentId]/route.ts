@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { LedewireError, AuthError, NotFoundError } from '@ledewire/node'
-import { requireAuth } from '@/lib/auth'
+import { LedewireError, AuthError, ForbiddenError, NotFoundError } from '@ledewire/node'
+import { getSession } from '@/lib/session'
 import { createMerchantClient } from '@/lib/ledewire'
 
 export async function GET(
@@ -10,13 +10,20 @@ export async function GET(
   const { contentId } = await params
 
   try {
-    const { storeId } = await requireAuth()
+    const session = await getSession()
+    if (!session.accessToken || !session.storeId) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+    }
+    const { storeId } = session
     const client = await createMerchantClient()
     const item = await client.seller.content.get(storeId, contentId)
     return NextResponse.json({ item })
   } catch (err) {
     if (err instanceof AuthError) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+    }
+    if (err instanceof ForbiddenError) {
+      return NextResponse.json({ error: err.message }, { status: 403 })
     }
     if (err instanceof NotFoundError) {
       return NextResponse.json({ error: 'Content not found' }, { status: 404 })
@@ -74,13 +81,20 @@ export async function PATCH(
   }
 
   try {
-    const { storeId } = await requireAuth()
+    const session = await getSession()
+    if (!session.accessToken || !session.storeId) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+    }
+    const { storeId } = session
     const client = await createMerchantClient()
     const updated = await client.seller.content.update(storeId, contentId, patch)
     return NextResponse.json({ ok: true, content: updated })
   } catch (err) {
     if (err instanceof AuthError) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+    }
+    if (err instanceof ForbiddenError) {
+      return NextResponse.json({ error: err.message }, { status: 403 })
     }
     if (err instanceof NotFoundError) {
       return NextResponse.json({ error: 'Content not found' }, { status: 404 })
@@ -99,13 +113,20 @@ export async function DELETE(
   const { contentId } = await params
 
   try {
-    const { storeId } = await requireAuth()
+    const session = await getSession()
+    if (!session.accessToken || !session.storeId) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+    }
+    const { storeId } = session
     const client = await createMerchantClient()
     await client.seller.content.delete(storeId, contentId)
     return NextResponse.json({ ok: true })
   } catch (err) {
     if (err instanceof AuthError) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+    }
+    if (err instanceof ForbiddenError) {
+      return NextResponse.json({ error: err.message }, { status: 403 })
     }
     if (err instanceof NotFoundError) {
       return NextResponse.json({ error: 'Content not found' }, { status: 404 })

@@ -11,7 +11,6 @@ vi.mock('next/navigation', () => ({
 const mockPush = vi.fn()
 const mockFetch = vi.fn()
 vi.stubGlobal('fetch', mockFetch)
-vi.stubGlobal('confirm', vi.fn().mockReturnValue(true))
 
 function okResponse(body: unknown = { ok: true }) {
   return Promise.resolve(
@@ -33,7 +32,6 @@ function errorResponse(body: unknown, status = 422) {
 
 beforeEach(() => {
   vi.clearAllMocks()
-  vi.mocked(confirm).mockReturnValue(true)
 })
 
 // ── Rendering ────────────────────────────────────────────────────────────────
@@ -105,6 +103,7 @@ describe('UserList delete', () => {
     render(<UserList initialUsers={[user]} />)
 
     await userEvent.click(screen.getByRole('button', { name: 'Remove' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Yes' }))
 
     await waitFor(() => {
       expect(screen.queryByText('gone@example.com')).not.toBeInTheDocument()
@@ -113,11 +112,11 @@ describe('UserList delete', () => {
   })
 
   it('does not call the API when the user cancels the confirmation', async () => {
-    vi.mocked(confirm).mockReturnValueOnce(false)
     const user = makeMerchantUser({ id: 'u-1', email: 'stay@example.com' })
     render(<UserList initialUsers={[user]} />)
 
     await userEvent.click(screen.getByRole('button', { name: 'Remove' }))
+    await userEvent.click(screen.getByRole('button', { name: 'No' }))
 
     expect(mockFetch).not.toHaveBeenCalled()
     expect(screen.getByText('stay@example.com')).toBeInTheDocument()
@@ -129,6 +128,7 @@ describe('UserList delete', () => {
     render(<UserList initialUsers={[user]} />)
 
     await userEvent.click(screen.getByRole('button', { name: 'Remove' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Yes' }))
 
     await waitFor(() => {
       expect(screen.getByText('Cannot remove owner')).toBeInTheDocument()
@@ -142,6 +142,7 @@ describe('UserList delete', () => {
     render(<UserList initialUsers={[user]} />)
 
     await userEvent.click(screen.getByRole('button', { name: 'Remove' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Yes' }))
 
     await waitFor(() => {
       expect(mockPush).toHaveBeenCalledWith('/login')

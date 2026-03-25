@@ -34,7 +34,9 @@ const CONTENT_TYPE_OPTIONS = [
 /** Decodes a base64-encoded markdown body for display in the textarea. */
 function decodeBody(encoded: string): string {
   try {
-    return decodeURIComponent(escape(atob(encoded)))
+    const binary = atob(encoded)
+    const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0))
+    return new TextDecoder().decode(bytes)
   } catch {
     return encoded
   }
@@ -74,7 +76,9 @@ export default function EditContentForm({ id, item }: Props) {
 
     if (contentType === 'markdown') {
       const contentBody = form.get('content_body') as string
-      patch.content_body = btoa(unescape(encodeURIComponent(contentBody)))
+      const encBytes = new TextEncoder().encode(contentBody)
+      const encBinary = Array.from(encBytes, (b) => String.fromCharCode(b)).join('')
+      patch.content_body = btoa(encBinary)
     } else {
       patch.content_uri = form.get('content_uri') as string
       const externalId = form.get('external_identifier') as string
