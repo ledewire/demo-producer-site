@@ -19,15 +19,15 @@ A Next.js 15 merchant admin application for the [LedeWire](https://ledewire.com)
 
 ## Tech Stack
 
-| Layer | Choice |
-|---|---|
-| Framework | Next.js 15 (App Router) |
-| Language | TypeScript 5 (strict mode) |
-| Auth / session | `@ledewire/node` SDK + `iron-session` |
-| Styling | Tailwind CSS + `@tailwindcss/forms` |
-| Markdown | `react-markdown` + `rehype-sanitize` |
-| Testing | Vitest + React Testing Library |
-| Dev environment | VS Code devcontainer (Node 20) |
+| Layer           | Choice                                |
+| --------------- | ------------------------------------- |
+| Framework       | Next.js 15 (App Router)               |
+| Language        | TypeScript 5 (strict mode)            |
+| Auth / session  | `@ledewire/node` SDK + `iron-session` |
+| Styling         | Tailwind CSS + `@tailwindcss/forms`   |
+| Markdown        | `react-markdown` + `rehype-sanitize`  |
+| Testing         | Vitest + React Testing Library        |
+| Dev environment | VS Code devcontainer (Node 20)        |
 
 ---
 
@@ -61,11 +61,12 @@ npm run dev
 
 ## Environment Variables
 
-| Variable | Required | Description |
-|---|---|---|
-| `SESSION_SECRET` | **Yes** | Iron-session encryption key — minimum 32 characters. Generate with `openssl rand -hex 32`. |
-| `LEDEWIRE_BASE_URL` | No | LedeWire API base URL. Defaults to `https://api.ledewire.com`. Override to point at a staging instance. |
-| `NEXT_PUBLIC_GOOGLE_CLIENT_ID` | No | Google OAuth client ID. When set, a **Sign in with Google** button is shown on the login page. Create one at [Google Cloud Console](https://console.cloud.google.com) → APIs & Services → Credentials. |
+| Variable            | Required | Description                                                                                             |
+| ------------------- | -------- | ------------------------------------------------------------------------------------------------------- |
+| `SESSION_SECRET`    | **Yes**  | Iron-session encryption key — minimum 32 characters. Generate with `openssl rand -hex 32`.              |
+| `LEDEWIRE_BASE_URL` | No       | LedeWire API base URL. Defaults to `https://api.ledewire.com`. Override to point at a staging instance. |
+
+> **Note:** `NEXT_PUBLIC_GOOGLE_CLIENT_ID` is no longer required. The Google OAuth client ID is fetched at request time from the LedeWire API via `client.config.getPublic()`, so no env var is needed to enable Google Sign-In.
 
 ---
 
@@ -115,9 +116,56 @@ src/
 
 ---
 
+## CI / CD
+
+### Continuous Integration (GitHub Actions)
+
+The [CI workflow](.github/workflows/ci.yml) runs on every push and pull request:
+
+1. **Typecheck** — `tsc --noEmit`
+2. **Lint** — `next lint`
+3. **Test** — `vitest run`
+
+A dummy `SESSION_SECRET` is injected by the workflow so the app's env-validation passes at test time; tests mock the session and SDK, so no real credentials are needed.
+
+### Deployment (Vercel)
+
+The [deploy workflow](.github/workflows/deploy.yml) runs automatically when a commit lands on `main`. It uses the Vercel CLI "build locally, deploy prebuilt" pattern so production environment variables are managed in the **Vercel dashboard**, not duplicated in GitHub secrets.
+
+#### One-time setup
+
+1. **Link the repo to a Vercel project** (run once, locally):
+
+   ```bash
+   npm i -g vercel
+   vercel link          # creates .vercel/project.json
+   cat .vercel/project.json   # note orgId and projectId
+   ```
+
+2. **Add three GitHub repository secrets** (`Settings → Secrets and variables → Actions`):
+
+   | Secret              | Where to get it                         |
+   | ------------------- | --------------------------------------- |
+   | `VERCEL_TOKEN`      | vercel.com → Settings → Tokens → Create |
+   | `VERCEL_ORG_ID`     | `orgId` from `.vercel/project.json`     |
+   | `VERCEL_PROJECT_ID` | `projectId` from `.vercel/project.json` |
+
+3. **Add production environment variables in the Vercel dashboard** (`Project → Settings → Environment Variables → Production`):
+
+   | Variable            | Notes                                              |
+   | ------------------- | -------------------------------------------------- |
+   | `SESSION_SECRET`    | ≥32 chars. Generate with `openssl rand -hex 32`.   |
+   | `LEDEWIRE_BASE_URL` | Defaults to `https://api.ledewire.com` if omitted. |
+
+   The `vercel pull` step in the workflow downloads these at build time.
+
+4. **Add `.vercel/` to `.gitignore`** — it contains org/project IDs but no secrets; keeping it out of version control is conventional since the IDs are stored in GitHub secrets.
+
+---
+
 ## Contributing
 
-This is currently a demo / reference implementation. Issues and pull requests are welcome, particularly around the items listed in `PLAN.md` under *Phase 5 — Production readiness*.
+This is currently a demo / reference implementation. Issues and pull requests are welcome, particularly around the items listed in `PLAN.md` under _Phase 5 — Production readiness_.
 
 ---
 
