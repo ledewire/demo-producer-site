@@ -188,3 +188,13 @@ buyer account attempts merchant login. The auth routes now catch `ForbiddenError
 and return a `403` with `err.message` to surface it to the client.
 
 ---
+
+## ✅ FIXED in 0.7.0 — No password reset support
+
+`client.merchant.auth.requestPasswordReset({ email })` sends a 6-digit reset code to the
+merchant's email. `client.merchant.auth.resetPassword({ email, reset_code, password })` applies
+the new password. Both are unauthenticated calls (throwaway `createClient`, no storage
+adapter needed). New types exported: `MerchantPasswordResetRequestBody`,
+`MerchantPasswordResetBody`, `MerchantPasswordResetResponse`.
+
+---
