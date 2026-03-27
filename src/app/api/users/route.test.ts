@@ -56,7 +56,6 @@ describe('POST /api/users', () => {
 
   it('returns 400 when author_fee_bps is negative', async () => {
     const res = await POST(makeRequest({ email: 'a@b.com', author_fee_bps: -1 }))
-    const body = await res.json()
 
     expect(res.status).toBe(400)
     expect(mockMerchantUsers.invite).not.toHaveBeenCalled()
@@ -64,7 +63,6 @@ describe('POST /api/users', () => {
 
   it('returns 400 when author_fee_bps is not an integer', async () => {
     const res = await POST(makeRequest({ email: 'a@b.com', author_fee_bps: 18.5 }))
-    const body = await res.json()
 
     expect(res.status).toBe(400)
     expect(mockMerchantUsers.invite).not.toHaveBeenCalled()
@@ -87,7 +85,6 @@ describe('POST /api/users', () => {
     )
 
     const res = await POST(makeRequest({ email: 'a@b.com', author_fee_bps: 2000 }))
-    const body = await res.json()
 
     expect(res.status).toBe(201)
     expect(mockMerchantUsers.invite).toHaveBeenCalledWith('store-abc', {

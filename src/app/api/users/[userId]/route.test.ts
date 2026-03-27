@@ -72,7 +72,6 @@ describe('PATCH /api/users/[userId]', () => {
 
   it('returns 400 for a non-integer fee', async () => {
     const res = await PATCH(patchRequest('su-1', { author_fee_bps: 18.5 }), makeParams('su-1'))
-    const body = await res.json()
 
     expect(res.status).toBe(400)
     expect(mockMerchantUsers.update).not.toHaveBeenCalled()
