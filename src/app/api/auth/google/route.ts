@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
     // Auto-select only when there is exactly one store; for multiple stores
     // the client will redirect to /select-store so the user can choose.
     session.storeId = stores.length === 1 ? stores[0].id : null
-    session.stores = stores.map((s) => ({ id: s.id, name: s.name }))
+    session.stores = stores.map((s) => ({ id: s.id, name: s.name, role: s.role }))
     await session.save()
 
     console.log('[auth/google] login succeeded', {

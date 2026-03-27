@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
     // the client will redirect to /select-store so the user can choose.
     session.storeId = stores.length === 1 ? stores[0].id : null
     // Persist the full stores list so the store selector can show all options.
-    session.stores = stores.map((s) => ({ id: s.id, name: s.name }))
+    session.stores = stores.map((s) => ({ id: s.id, name: s.name, role: s.role }))
     await session.save()
 
     return NextResponse.json({

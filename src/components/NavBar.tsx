@@ -3,16 +3,19 @@ import LogoutButton from './LogoutButton'
 import StoreSelector from './StoreSelector'
 import { getSession } from '@/lib/session'
 
-const navLinks = [
+const allNavLinks = [
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/content', label: 'Content' },
-  { href: '/users', label: 'Authors' },
+  { href: '/users', label: 'Authors', ownerOnly: true },
 ]
 
 export default async function NavBar() {
   const session = await getSession()
   const stores = session.stores ?? []
   const currentStoreId = session.storeId ?? null
+  const currentStore = stores.find((s) => s.id === currentStoreId)
+  const isOwner = currentStore?.role === 'owner'
+  const navLinks = allNavLinks.filter((link) => !link.ownerOnly || isOwner)
 
   return (
     <nav className="bg-white border-b border-gray-200">
