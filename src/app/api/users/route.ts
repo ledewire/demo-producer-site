@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { LedewireError, AuthError, ForbiddenError } from '@ledewire/node'
-import { getSession } from '@/lib/session'
 import { createMerchantClient } from '@/lib/ledewire'
+import { requireAuthForRoute } from '@/lib/route-auth'
 
 export async function POST(request: NextRequest) {
   let body: unknown
@@ -25,12 +25,10 @@ export async function POST(request: NextRequest) {
     }
   }
 
+  const auth = await requireAuthForRoute()
+  if (auth instanceof NextResponse) return auth
+  const { storeId } = auth
   try {
-    const session = await getSession()
-    if (!session.accessToken || !session.storeId) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
-    }
-    const { storeId } = session
     const client = await createMerchantClient()
 
     await client.merchant.users.invite(storeId, {

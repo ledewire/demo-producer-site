@@ -4,32 +4,12 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import MarkdownEditor from '@/components/MarkdownEditor'
-
-interface ContentItem {
-  id: string
-  title: string
-  content_type: string
-  content_body?: string | null
-  content_uri?: string | null
-  external_identifier?: string | null
-  price_cents: number
-  visibility: string
-}
+import { type ContentItem, VISIBILITY_OPTIONS, CONTENT_TYPE_OPTIONS } from '@/lib/content'
 
 interface Props {
   id: string
   item: ContentItem
 }
-
-const VISIBILITY_OPTIONS = [
-  { value: 'public', label: 'Public' },
-  { value: 'private', label: 'Private (draft)' },
-]
-
-const CONTENT_TYPE_OPTIONS = [
-  { value: 'markdown', label: 'Markdown article' },
-  { value: 'external_ref', label: 'External reference (video, PDF, link…)' },
-]
 
 /** Decodes a base64-encoded markdown body for display in the textarea. */
 function decodeBody(encoded: string): string {

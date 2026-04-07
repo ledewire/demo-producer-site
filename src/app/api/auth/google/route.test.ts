@@ -51,7 +51,7 @@ beforeEach(() => {
   vi.clearAllMocks()
   mockSave.mockResolvedValue(undefined)
   mockGetPublic.mockResolvedValue({ google_client_id: 'test-client-id.apps.googleusercontent.com' })
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   vi.mocked(createClient).mockReturnValue({
     config: { getPublic: mockGetPublic },
     merchant: { auth: { loginWithGoogleAndListStores: mockLoginWithGoogle } },
@@ -102,7 +102,7 @@ describe('POST /api/auth/google', () => {
     mockGetPublic.mockResolvedValueOnce({ google_client_id: undefined })
     const stores = [{ id: 'store-1', name: 'My Store' }]
     mockLoginWithGoogle.mockResolvedValueOnce({ tokens: mockTokens, stores })
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     vi.mocked(getSession).mockResolvedValueOnce({ save: mockSave } as any)
 
     // Any token value is accepted when there is no configured client ID
@@ -118,7 +118,7 @@ describe('POST /api/auth/google', () => {
     mockGetPublic.mockRejectedValueOnce(new Error('network error'))
     const stores = [{ id: 'store-1', name: 'My Store' }]
     mockLoginWithGoogle.mockResolvedValueOnce({ tokens: mockTokens, stores })
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     vi.mocked(getSession).mockResolvedValueOnce({ save: mockSave } as any)
 
     const res = await POST(makeRequest({ id_token: 'any-token-value' }))
@@ -132,9 +132,9 @@ describe('POST /api/auth/google', () => {
     const stores = [{ id: 'store-1', name: 'My Store' }]
     mockLoginWithGoogle.mockResolvedValueOnce({ tokens: mockTokens, stores })
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const session: Record<string, unknown> = { save: mockSave }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     vi.mocked(getSession).mockResolvedValueOnce(session as any)
 
     const res = await POST(makeRequest({ id_token: validToken }))
@@ -159,9 +159,9 @@ describe('POST /api/auth/google', () => {
     ]
     mockLoginWithGoogle.mockResolvedValueOnce({ tokens: mockTokens, stores })
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const session: Record<string, unknown> = { save: mockSave }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     vi.mocked(getSession).mockResolvedValueOnce(session as any)
 
     const res = await POST(makeRequest({ id_token: validToken }))
@@ -176,7 +176,7 @@ describe('POST /api/auth/google', () => {
   })
 
   it('returns 403 on ForbiddenError', async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     vi.mocked(getSession).mockResolvedValueOnce({ save: mockSave } as any)
     mockLoginWithGoogle.mockRejectedValueOnce(new ForbiddenError('no merchant role', 403))
 
@@ -188,7 +188,7 @@ describe('POST /api/auth/google', () => {
   })
 
   it('returns 401 on AuthError', async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     vi.mocked(getSession).mockResolvedValueOnce({ save: mockSave } as any)
     mockLoginWithGoogle.mockRejectedValueOnce(new AuthError('invalid token', 401))
 
@@ -200,7 +200,7 @@ describe('POST /api/auth/google', () => {
   })
 
   it('returns the SDK status code on a generic LedewireError', async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     vi.mocked(getSession).mockResolvedValueOnce({ save: mockSave } as any)
     mockLoginWithGoogle.mockRejectedValueOnce(new LedewireError('service unavailable', 503))
 

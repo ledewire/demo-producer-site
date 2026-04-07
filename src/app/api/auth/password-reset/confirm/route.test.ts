@@ -28,7 +28,7 @@ const validBody = { email: 'owner@example.com', reset_code: '123456', password: 
 
 beforeEach(() => {
   vi.clearAllMocks()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   vi.mocked(createClient).mockReturnValue({
     merchant: { auth: { resetPassword: mockResetPassword } },
   } as any)

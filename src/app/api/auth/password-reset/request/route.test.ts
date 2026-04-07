@@ -26,7 +26,7 @@ function makeRequest(body: unknown) {
 
 beforeEach(() => {
   vi.clearAllMocks()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   vi.mocked(createClient).mockReturnValue({
     merchant: { auth: { requestPasswordReset: mockRequestPasswordReset } },
   } as any)

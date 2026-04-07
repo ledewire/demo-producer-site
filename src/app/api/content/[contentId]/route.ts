@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { LedewireError, AuthError, ForbiddenError, NotFoundError } from '@ledewire/node'
-import { getSession } from '@/lib/session'
 import { createMerchantClient } from '@/lib/ledewire'
+import { requireAuthForRoute } from '@/lib/route-auth'
 
 export async function GET(
   _request: NextRequest,
@@ -9,12 +9,10 @@ export async function GET(
 ) {
   const { contentId } = await params
 
+  const auth = await requireAuthForRoute()
+  if (auth instanceof NextResponse) return auth
+  const { storeId } = auth
   try {
-    const session = await getSession()
-    if (!session.accessToken || !session.storeId) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
-    }
-    const { storeId } = session
     const client = await createMerchantClient()
     const item = await client.seller.content.get(storeId, contentId)
     return NextResponse.json({ item })
@@ -80,12 +78,14 @@ export async function PATCH(
     return NextResponse.json({ error: 'No fields to update' }, { status: 400 })
   }
 
+  if (price_cents !== undefined && (!Number.isInteger(price_cents) || price_cents < 0)) {
+    return NextResponse.json({ error: 'price_cents must be a non-negative integer' }, { status: 400 })
+  }
+
+  const auth = await requireAuthForRoute()
+  if (auth instanceof NextResponse) return auth
+  const { storeId } = auth
   try {
-    const session = await getSession()
-    if (!session.accessToken || !session.storeId) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
-    }
-    const { storeId } = session
     const client = await createMerchantClient()
     const updated = await client.seller.content.update(storeId, contentId, patch)
     return NextResponse.json({ ok: true, content: updated })
@@ -112,12 +112,10 @@ export async function DELETE(
 ) {
   const { contentId } = await params
 
+  const auth = await requireAuthForRoute()
+  if (auth instanceof NextResponse) return auth
+  const { storeId } = auth
   try {
-    const session = await getSession()
-    if (!session.accessToken || !session.storeId) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
-    }
-    const { storeId } = session
     const client = await createMerchantClient()
     await client.seller.content.delete(storeId, contentId)
     return NextResponse.json({ ok: true })

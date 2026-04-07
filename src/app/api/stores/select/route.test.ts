@@ -31,7 +31,7 @@ function makeRequest(body: unknown) {
 beforeEach(() => {
   vi.clearAllMocks()
   mockSave.mockResolvedValue(undefined)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   vi.mocked(getSession).mockResolvedValue({ ...defaultSession } as any)
 })
 
@@ -63,7 +63,7 @@ describe('POST /api/stores/select', () => {
   })
 
   it('returns 401 when the session has no access token', async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     vi.mocked(getSession).mockResolvedValueOnce({
       ...defaultSession,
       accessToken: undefined,

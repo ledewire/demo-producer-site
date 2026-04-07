@@ -7,7 +7,7 @@ export interface SessionData {
   accessToken?: string
   refreshToken?: string
   expiresAt?: number
-  storeId?: string | null
+  storeId: string | null
   /** All stores the authenticated merchant can manage. */
   stores?: Array<{ id: string; name: string; role: 'owner' | 'author' }>
 }

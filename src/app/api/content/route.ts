@@ -1,15 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { LedewireError, AuthError, ForbiddenError } from '@ledewire/node'
-import { getSession } from '@/lib/session'
 import { createMerchantClient } from '@/lib/ledewire'
+import { requireAuthForRoute } from '@/lib/route-auth'
 
 export async function GET(_request: NextRequest) {
+  const auth = await requireAuthForRoute()
+  if (auth instanceof NextResponse) return auth
+  const { storeId } = auth
   try {
-    const session = await getSession()
-    if (!session.accessToken || !session.storeId) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
-    }
-    const { storeId } = session
     const client = await createMerchantClient()
     const { data } = await client.seller.content.list(storeId)
     return NextResponse.json({ items: data })
@@ -59,6 +57,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'title and price_cents are required' }, { status: 400 })
   }
 
+  if (!Number.isInteger(price_cents) || price_cents < 0) {
+    return NextResponse.json({ error: 'price_cents must be a non-negative integer' }, { status: 400 })
+  }
+
   if (type === 'external_ref') {
     if (!content_uri) {
       return NextResponse.json(
@@ -74,11 +76,9 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const session = await getSession()
-    if (!session.accessToken || !session.storeId) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
-    }
-    const { storeId } = session
+    const auth = await requireAuthForRoute()
+    if (auth instanceof NextResponse) return auth
+    const { storeId } = auth
     const client = await createMerchantClient()
 
     const sdkPayload =

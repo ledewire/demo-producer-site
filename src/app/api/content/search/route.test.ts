@@ -40,13 +40,30 @@ describe('POST /api/content/search', () => {
     })
   })
 
-  it('returns 400 when metadata is missing', async () => {
+  it('returns items matching a title query', async () => {
+    const items = [makeContent({ title: 'My Article' })]
+    mockSellerContent.search.mockResolvedValueOnce({ data: items, pagination: makePagination(1) })
+
+    const res = await POST(makeRequest({ title: 'My' }))
+    const body = await res.json()
+
+    expect(res.status).toBe(200)
+    expect(body.items).toEqual(items)
+    expect(mockSellerContent.search).toHaveBeenCalledWith('store-abc', { title: 'My' })
+  })
+
+  it('returns 400 when neither title nor metadata is provided', async () => {
     const res = await POST(makeRequest({}))
     expect(res.status).toBe(400)
   })
 
   it('returns 400 when metadata is not an object', async () => {
     const res = await POST(makeRequest({ metadata: 'not-an-object' }))
+    expect(res.status).toBe(400)
+  })
+
+  it('returns 400 when title is not a string', async () => {
+    const res = await POST(makeRequest({ title: 42 }))
     expect(res.status).toBe(400)
   })
 
@@ -62,7 +79,7 @@ describe('POST /api/content/search', () => {
 
   it('returns 401 when not authenticated', async () => {
     vi.mocked(getSession).mockResolvedValueOnce({} as any)
-    const res = await POST(makeRequest({ metadata: {} }))
+    const res = await POST(makeRequest({ title: 'hello' }))
     const body = await res.json()
     expect(res.status).toBe(401)
     expect(body.error).toBe('Not authenticated')

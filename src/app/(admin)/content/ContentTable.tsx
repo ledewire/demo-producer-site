@@ -1,21 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Pagination from '@/components/Pagination'
+import { type ContentItem } from '@/lib/content'
 
 const PAGE_SIZE = 10
-
-interface ContentItem {
-  id: string
-  title: string
-  content_type: string
-  content_uri?: string | null
-  price_cents: number
-  visibility: string
-  created_at: string
-}
 
 interface Props {
   initialItems: ContentItem[]
@@ -25,16 +16,42 @@ export default function ContentTable({ initialItems }: Props) {
   const router = useRouter()
   const [items, setItems] = useState(initialItems)
   const [query, setQuery] = useState('')
+  const [searchResults, setSearchResults] = useState<ContentItem[] | null>(null)
+  const [searching, setSearching] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [page, setPage] = useState(1)
 
-  const filtered = query
-    ? items.filter((item) => item.title.toLowerCase().includes(query.toLowerCase()))
-    : items
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
-  const visibleItems = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+  useEffect(() => {
+    if (!query) {
+      setSearchResults(null)
+      return
+    }
+    const timer = setTimeout(async () => {
+      setSearching(true)
+      try {
+        const res = await fetch('/api/content/search', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title: query }),
+        })
+        if (res.ok) {
+          const data = await res.json()
+          setSearchResults(data.items)
+        }
+      } catch {
+        // network error — keep showing current results
+      } finally {
+        setSearching(false)
+      }
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [query])
+
+  const displayItems = searchResults ?? items
+  const totalPages = Math.max(1, Math.ceil(displayItems.length / PAGE_SIZE))
+  const visibleItems = displayItems.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
   const handleQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(e.target.value)
@@ -57,6 +74,7 @@ export default function ContentTable({ initialItems }: Props) {
         setError(data.error ?? 'Failed to delete content')
       } else {
         setItems((prev) => prev.filter((item) => item.id !== id))
+        setSearchResults((prev) => prev ? prev.filter((item) => item.id !== id) : null)
         // Stay on the current page unless it no longer exists after deletion
         setPage((p) => Math.min(p, Math.max(1, Math.ceil((items.length - 1) / PAGE_SIZE))))
       }
@@ -75,7 +93,7 @@ export default function ContentTable({ initialItems }: Props) {
         onChange={handleQueryChange}
         placeholder="Search by title…"
         aria-label="Search content"
-        className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm placeholder-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+        className={`w-full rounded-lg border border-gray-300 px-3 py-2 text-sm placeholder-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 ${searching ? 'opacity-70' : ''}`}
       />
       {error && (
         <div

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, fireEvent, act } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import ContentTable from './ContentTable'
 import { makeContent } from '@/test/factories'
@@ -181,38 +181,95 @@ describe('ContentTable pagination', () => {
 // ── Search ────────────────────────────────────────────────────────────────
 
 describe('ContentTable search', () => {
-  it('filters items by title (case-insensitive)', async () => {
+  it('calls the search API and displays results after typing', async () => {
+    vi.useFakeTimers()
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ items: [makeContent({ id: 'c1', title: 'Article One' })] }),
+    })
+
     render(<ContentTable initialItems={makeItems()} />)
-    await userEvent.type(screen.getByRole('searchbox'), 'one')
-    expect(screen.getByText('Article One')).toBeInTheDocument()
-    expect(screen.queryByText('Article Two')).not.toBeInTheDocument()
+    fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'one' } })
+
+    await act(async () => {
+      vi.runAllTimers()
+    })
+    vi.useRealTimers()
+
+    await waitFor(() => {
+      expect(screen.getByText('Article One')).toBeInTheDocument()
+      expect(screen.queryByText('Article Two')).not.toBeInTheDocument()
+    })
   })
 
   it('shows all items when the search input is cleared', async () => {
+    vi.useFakeTimers()
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ items: [] }),
+    })
+
     render(<ContentTable initialItems={makeItems()} />)
-    const input = screen.getByRole('searchbox')
-    await userEvent.type(input, 'one')
-    await userEvent.clear(input)
+    fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'noresults' } })
+    await act(async () => {
+      vi.runAllTimers()
+    })
+    vi.useRealTimers()
+    await waitFor(() => expect(mockFetch).toHaveBeenCalled())
+
+    fireEvent.change(screen.getByRole('searchbox'), { target: { value: '' } })
     expect(screen.getByText('Article One')).toBeInTheDocument()
     expect(screen.getByText('Article Two')).toBeInTheDocument()
   })
 
-  it('shows an empty table when no items match the query', async () => {
+  it('shows an empty table when the search API returns no results', async () => {
+    vi.useFakeTimers()
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ items: [] }),
+    })
+
     render(<ContentTable initialItems={makeItems()} />)
-    await userEvent.type(screen.getByRole('searchbox'), 'zzz')
-    expect(screen.queryByText('Article One')).not.toBeInTheDocument()
-    expect(screen.queryByText('Article Two')).not.toBeInTheDocument()
+    fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'zzz' } })
+
+    await act(async () => {
+      vi.runAllTimers()
+    })
+    vi.useRealTimers()
+
+    await waitFor(() => {
+      expect(screen.queryByText('Article One')).not.toBeInTheDocument()
+      expect(screen.queryByText('Article Two')).not.toBeInTheDocument()
+    })
   })
 
   it('resets to page 1 when the search query changes', async () => {
     const lotsOfItems = Array.from({ length: 15 }, (_, i) =>
       makeContent({ id: `cx${i}`, title: i < 10 ? `Alpha ${i}` : `Beta ${i}` }),
     )
+    vi.useFakeTimers()
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        items: Array.from({ length: 10 }, (_, i) =>
+          makeContent({ id: `cx${i}`, title: `Alpha ${i}` }),
+        ),
+      }),
+    })
+
     render(<ContentTable initialItems={lotsOfItems} />)
-    await userEvent.click(screen.getByRole('button', { name: /next/i }))
+    fireEvent.click(screen.getByRole('button', { name: /next/i }))
     expect(screen.getByText('Beta 10')).toBeInTheDocument()
-    await userEvent.type(screen.getByRole('searchbox'), 'Alpha')
-    expect(screen.getByText('Alpha 0')).toBeInTheDocument()
-    expect(screen.queryByText('Beta 10')).not.toBeInTheDocument()
+
+    fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'Alpha' } })
+    await act(async () => {
+      vi.runAllTimers()
+    })
+    vi.useRealTimers()
+
+    await waitFor(() => {
+      expect(screen.getByText('Alpha 0')).toBeInTheDocument()
+      expect(screen.queryByText('Beta 10')).not.toBeInTheDocument()
+    })
   })
 })

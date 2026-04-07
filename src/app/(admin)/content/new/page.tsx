@@ -3,16 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import MarkdownEditor from '@/components/MarkdownEditor'
-
-const VISIBILITY_OPTIONS = [
-  { value: 'public', label: 'Public' },
-  { value: 'private', label: 'Private (draft)' },
-]
-
-const CONTENT_TYPE_OPTIONS = [
-  { value: 'markdown', label: 'Markdown article' },
-  { value: 'external_ref', label: 'External reference (video, PDF, link…)' },
-]
+import { VISIBILITY_OPTIONS, CONTENT_TYPE_OPTIONS } from '@/lib/content'
 
 export default function NewContentPage() {
   const router = useRouter()
@@ -46,7 +37,9 @@ export default function NewContentPage() {
 
     if (contentType === 'markdown') {
       const contentBody = form.get('content_body') as string
-      payload.content_body = btoa(unescape(encodeURIComponent(contentBody)))
+      const encBytes = new TextEncoder().encode(contentBody)
+      const encBinary = Array.from(encBytes, (b) => String.fromCharCode(b)).join('')
+      payload.content_body = btoa(encBinary)
     } else {
       payload.content_uri = form.get('content_uri') as string
       const externalId = form.get('external_identifier') as string

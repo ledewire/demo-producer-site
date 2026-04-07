@@ -35,6 +35,11 @@ export async function POST(request: NextRequest) {
     session.stores = stores.map((s) => ({ id: s.id, name: s.name, role: s.role }))
     await session.save()
 
+    console.log('[auth/login] login succeeded', {
+      storeId: session.storeId,
+      storeCount: stores.length,
+    })
+
     return NextResponse.json({
       ok: true,
       storeId: session.storeId,
@@ -42,14 +47,18 @@ export async function POST(request: NextRequest) {
     })
   } catch (err) {
     if (err instanceof ForbiddenError) {
+      console.error('[auth/login] ForbiddenError', { message: err.message })
       return NextResponse.json({ error: err.message }, { status: 403 })
     }
     if (err instanceof AuthError) {
+      console.error('[auth/login] AuthError', { message: err.message })
       return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 })
     }
     if (err instanceof LedewireError) {
+      console.error('[auth/login] LedewireError', { message: err.message, statusCode: err.statusCode })
       return NextResponse.json({ error: err.message }, { status: err.statusCode })
     }
+    console.error('[auth/login] unexpected error', err)
     throw err
   }
 }

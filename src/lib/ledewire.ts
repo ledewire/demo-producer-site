@@ -43,7 +43,7 @@ export async function createMerchantClient() {
         session.accessToken = undefined
         session.refreshToken = undefined
         session.expiresAt = undefined
-        session.storeId = undefined
+        session.storeId = null
         session.stores = undefined
       }
     },
@@ -52,8 +52,5 @@ export async function createMerchantClient() {
   return createClient({
     baseUrl: config.ledewireBaseUrl,
     storage,
-    onAuthExpired: () => {
-      // The route handler catches AuthError and redirects to /login.
-    },
   })
 }
