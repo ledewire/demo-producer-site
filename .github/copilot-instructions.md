@@ -2,8 +2,8 @@
 
 ## What this project is
 
-A Next.js 15 merchant admin site backed by `@ledewire/node` (currently **0.5.0**).
-Merchants log in (email/password or Google), then manage content, view sales, and invite authors.
+A Next.js 15 merchant admin site backed by `@ledewire/node` (currently **0.9.0**).
+Merchants log in (email/password or Google), then manage content, view sales, invite authors, and configure x402 pricing rules.
 No API key is stored server-side — all SDK calls use the merchant JWT from the iron-session cookie.
 
 ## Stack
@@ -24,7 +24,7 @@ No API key is stored server-side — all SDK calls use the merchant JWT from the
 - **`TokenStorage.clearTokens` caveat** — `session.destroy()` throws in Server Component context (Next.js 15.2+). The adapter wraps it in try/catch and falls back to nulling session fields; `requireAuth()` handles the redirect on the next request.
 - Login routes (`/api/auth/login`, `/api/auth/google`) create a **temporary** throwaway client (no storage adapter needed — tokens come back in `MerchantLoginResult`)
 
-### SDK patterns (0.5.0+)
+### SDK patterns (0.9.0+)
 
 - Use `loginWithEmailAndListStores()` / `loginWithGoogleAndListStores()` in auth routes — single call, returns `{ tokens, stores }`
 - Tokens from login come back as `StoredTokens` (camelCase, `expiresAt` as Unix ms) — assign `tokens.accessToken`, `tokens.refreshToken`, `tokens.expiresAt` directly; `parseExpiresAt` is no longer needed
@@ -32,6 +32,9 @@ No API key is stored server-side — all SDK calls use the merchant JWT from the
 - `instanceof LedewireError` correctly narrows in strict TS — no `err as LedewireError` casts needed
 - `Content` is a discriminated union on `content_type` — build typed objects, not `Record<string, any>`
 - `ForbiddenError` (extends `LedewireError`) is thrown when valid credentials have no merchant role — catch it before `LedewireError` to return `403`
+- `client.merchant.pricingRules` — `list`, `create`, `deactivate`; domain must be verified first
+- `client.merchant.domains` — `list`, `add`, `remove`, `verify(storeId, { domain })` — `verify` enqueues an async DNS check; poll `list()` for the status transition
+- `MerchantPricingRule` and `MerchantDomainVerification` are not exported from the SDK's public entry point — use the local types in `src/lib/content.ts`
 
 ### Testing
 
