@@ -1,4 +1,5 @@
 import type { ContentResponse, MerchantUser } from '@ledewire/node'
+import type { MerchantPricingRule, MerchantDomainVerification } from '@/lib/content'
 
 /**
  * Test data factories.
@@ -54,7 +55,7 @@ export function makePagination(total = 2) {
     total,
     per_page: 25,
     current_page: 1,
-    total_pages: total === 0 ? 0 : 1,
+    total_pages: Math.ceil(total / 25),
   }
 }
 
@@ -69,6 +70,36 @@ export function makeMerchantUser(overrides: Partial<MerchantUser> = {}): Merchan
     invited_at: '2026-01-01T00:00:00.000Z',
     accepted_at: '2026-01-02T00:00:00.000Z',
     email: 'author@example.com',
+    ...overrides,
+  }
+}
+
+export function makePricingRule(overrides: Partial<MerchantPricingRule> = {}): MerchantPricingRule {
+  return {
+    id: 'rule-001',
+    store_id: 'store-abc',
+    url_pattern: 'https://example.com/articles/*',
+    price_cents: 150,
+    active: true,
+    created_at: '2026-04-01T00:00:00.000Z',
+    updated_at: '2026-04-01T00:00:00.000Z',
+    ...overrides,
+  }
+}
+
+export function makeDomainVerification(
+  overrides: Partial<MerchantDomainVerification> = {},
+): MerchantDomainVerification {
+  return {
+    id: 'domain-001',
+    store_id: 'store-abc',
+    domain: 'example.com',
+    status: 'pending',
+    txt_record_name: '_ledewire-verify.example.com',
+    txt_record_value: 'ledewire-verify=abc123',
+    verified_at: null,
+    checked_at: null,
+    created_at: '2026-04-01T00:00:00.000Z',
     ...overrides,
   }
 }

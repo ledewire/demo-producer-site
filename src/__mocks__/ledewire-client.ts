@@ -14,5 +14,7 @@ const mockClient = vi.mocked(createMockClient(vi.fn), true)
 export const mockSellerContent = mockClient.seller.content
 export const mockMerchantSales = mockClient.merchant.sales
 export const mockMerchantUsers = mockClient.merchant.users
+export const mockMerchantPricingRules = mockClient.merchant.pricingRules
+export const mockMerchantDomains = mockClient.merchant.domains
 
 export const createMerchantClient = vi.fn().mockResolvedValue(mockClient)
