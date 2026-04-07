@@ -16,7 +16,7 @@ export default async function UsersPage() {
       <div className="space-y-8">
         <h1 className="text-2xl font-bold text-gray-900">Authors</h1>
         <UserList initialUsers={users} />
-        <div className="max-w-md">
+        <div>
           <h2 className="text-lg font-semibold text-gray-800 mb-4">Invite Author</h2>
           <InviteForm />
         </div>

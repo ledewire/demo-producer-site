@@ -7,6 +7,7 @@ const allNavLinks = [
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/content', label: 'Content' },
   { href: '/users', label: 'Authors', ownerOnly: true },
+  { href: '/pricing-rules', label: 'Pricing Rules', ownerOnly: true },
 ]
 
 export default async function NavBar() {
@@ -36,9 +37,7 @@ export default async function NavBar() {
             </div>
           </div>
           <div className="flex items-center space-x-4">
-            {stores.length > 1 && (
-              <StoreSelector stores={stores} currentStoreId={currentStoreId} />
-            )}
+            {stores.length > 1 && <StoreSelector stores={stores} currentStoreId={currentStoreId} />}
             <LogoutButton />
           </div>
         </div>
