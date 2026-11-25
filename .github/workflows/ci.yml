@@ -40,5 +40,8 @@ jobs:
       - name: Test with coverage
         run: npm run test:coverage
 
+      - name: Security audit
+        run: npm run audit:security
+
       - name: Build
         run: npm run build
