@@ -4,10 +4,6 @@ import path from 'path'
 
 export default defineConfig({
   plugins: [react({ jsxRuntime: 'automatic' })],
-  esbuild: {
-    jsx: 'automatic',
-    jsxImportSource: 'react',
-  },
   test: {
     environment: 'jsdom',
     globals: true,
