@@ -58,7 +58,10 @@ export async function POST(request: NextRequest) {
   }
 
   if (!Number.isInteger(price_cents) || price_cents < 0) {
-    return NextResponse.json({ error: 'price_cents must be a non-negative integer' }, { status: 400 })
+    return NextResponse.json(
+      { error: 'price_cents must be a non-negative integer' },
+      { status: 400 },
+    )
   }
 
   if (type === 'external_ref') {

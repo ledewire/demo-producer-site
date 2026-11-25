@@ -73,9 +73,16 @@ export default function NewContentPage() {
     <div className="max-w-2xl space-y-6">
       <h1 className="text-2xl font-bold text-gray-900">New Content</h1>
 
-      <form onSubmit={handleSubmit} noValidate className="bg-white rounded-lg border border-gray-200 p-6 space-y-5">
+      <form
+        onSubmit={handleSubmit}
+        noValidate
+        className="bg-white rounded-lg border border-gray-200 p-6 space-y-5"
+      >
         {error && (
-          <div role="alert" className="rounded bg-red-50 border border-red-200 p-3 text-sm text-red-700">
+          <div
+            role="alert"
+            className="rounded bg-red-50 border border-red-200 p-3 text-sm text-red-700"
+          >
             {error}
           </div>
         )}
@@ -153,9 +160,7 @@ export default function NewContentPage() {
 
         {contentType === 'markdown' ? (
           <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Content (Markdown)
-            </label>
+            <label className="block text-sm font-medium text-gray-700">Content (Markdown)</label>
             <div className="mt-1">
               <MarkdownEditor id="content_body" required />
             </div>
@@ -174,10 +179,15 @@ export default function NewContentPage() {
                 placeholder="https://vimeo.com/987654321"
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               />
-              <p className="mt-1 text-xs text-gray-500">The URL of the externally hosted resource (video, PDF, etc.)</p>
+              <p className="mt-1 text-xs text-gray-500">
+                The URL of the externally hosted resource (video, PDF, etc.)
+              </p>
             </div>
             <div>
-              <label htmlFor="external_identifier" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="external_identifier"
+                className="block text-sm font-medium text-gray-700"
+              >
                 External identifier <span className="text-gray-400">(optional)</span>
               </label>
               <input
@@ -187,7 +197,9 @@ export default function NewContentPage() {
                 placeholder="vimeo:987654321"
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               />
-              <p className="mt-1 text-xs text-gray-500">Provider-prefixed ID, e.g. <code>vimeo:987654321</code></p>
+              <p className="mt-1 text-xs text-gray-500">
+                Provider-prefixed ID, e.g. <code>vimeo:987654321</code>
+              </p>
             </div>
           </>
         )}

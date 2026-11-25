@@ -19,7 +19,10 @@ export async function POST(request: NextRequest) {
   if (title !== undefined && typeof title !== 'string') {
     return NextResponse.json({ error: 'title must be a string' }, { status: 400 })
   }
-  if (metadata !== undefined && (typeof metadata !== 'object' || Array.isArray(metadata) || metadata === null)) {
+  if (
+    metadata !== undefined &&
+    (typeof metadata !== 'object' || Array.isArray(metadata) || metadata === null)
+  ) {
     return NextResponse.json({ error: 'metadata must be an object' }, { status: 400 })
   }
 

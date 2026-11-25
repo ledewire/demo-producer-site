@@ -28,7 +28,7 @@ const validBody = { email: 'owner@example.com', reset_code: '123456', password: 
 
 beforeEach(() => {
   vi.clearAllMocks()
-   
+
   vi.mocked(createClient).mockReturnValue({
     merchant: { auth: { resetPassword: mockResetPassword } },
   } as any)
@@ -86,9 +86,7 @@ describe('POST /api/auth/password-reset/confirm', () => {
   })
 
   it('returns 404 when the reset code is invalid or expired', async () => {
-    mockResetPassword.mockRejectedValueOnce(
-      new NotFoundError('Invalid or expired reset code', 404),
-    )
+    mockResetPassword.mockRejectedValueOnce(new NotFoundError('Invalid or expired reset code', 404))
 
     const res = await POST(makeRequest(validBody))
     const body = await res.json()

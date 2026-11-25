@@ -38,7 +38,7 @@ function makeRequest(body: unknown) {
 beforeEach(() => {
   vi.clearAllMocks()
   mockSave.mockResolvedValue(undefined)
-   
+
   vi.mocked(createClient).mockReturnValue({
     merchant: { auth: { loginWithEmailAndListStores: mockLoginWithEmail } },
   } as any)
@@ -77,9 +77,8 @@ describe('POST /api/auth/login', () => {
     const stores = [{ id: 'store-1', name: 'My Store' }]
     mockLoginWithEmail.mockResolvedValueOnce({ tokens: mockTokens, stores })
 
-     
     const session: Record<string, unknown> = { save: mockSave }
-     
+
     vi.mocked(getSession).mockResolvedValueOnce(session as any)
 
     const res = await POST(makeRequest({ email: 'a@b.com', password: 'secret' }))
@@ -104,9 +103,8 @@ describe('POST /api/auth/login', () => {
     ]
     mockLoginWithEmail.mockResolvedValueOnce({ tokens: mockTokens, stores })
 
-     
     const session: Record<string, unknown> = { save: mockSave }
-     
+
     vi.mocked(getSession).mockResolvedValueOnce(session as any)
 
     const res = await POST(makeRequest({ email: 'a@b.com', password: 'secret' }))
@@ -121,7 +119,6 @@ describe('POST /api/auth/login', () => {
   })
 
   it('returns 403 on ForbiddenError', async () => {
-     
     vi.mocked(getSession).mockResolvedValueOnce({ save: mockSave } as any)
     mockLoginWithEmail.mockRejectedValueOnce(new ForbiddenError('no merchant role', 403))
 
@@ -133,7 +130,6 @@ describe('POST /api/auth/login', () => {
   })
 
   it('returns 401 on AuthError', async () => {
-     
     vi.mocked(getSession).mockResolvedValueOnce({ save: mockSave } as any)
     mockLoginWithEmail.mockRejectedValueOnce(new AuthError('bad credentials', 401))
 
@@ -145,7 +141,6 @@ describe('POST /api/auth/login', () => {
   })
 
   it('returns the SDK status code on a generic LedewireError', async () => {
-     
     vi.mocked(getSession).mockResolvedValueOnce({ save: mockSave } as any)
     mockLoginWithEmail.mockRejectedValueOnce(new LedewireError('service unavailable', 503))
 

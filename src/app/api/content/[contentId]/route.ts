@@ -79,7 +79,10 @@ export async function PATCH(
   }
 
   if (price_cents !== undefined && (!Number.isInteger(price_cents) || price_cents < 0)) {
-    return NextResponse.json({ error: 'price_cents must be a non-negative integer' }, { status: 400 })
+    return NextResponse.json(
+      { error: 'price_cents must be a non-negative integer' },
+      { status: 400 },
+    )
   }
 
   const auth = await requireAuthForRoute()

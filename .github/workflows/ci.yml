@@ -2,14 +2,18 @@ name: CI
 
 on:
   push:
-    branches: ["**"]
+    branches: [main, staging]
   pull_request:
-    branches: ["**"]
+    branches: [main, staging]
 
 jobs:
   ci:
-    name: Typecheck, Lint & Test
     runs-on: ubuntu-latest
+    env:
+      # Placeholders that satisfy env validation in tests and the build. No
+      # real secret is used, so this also works for PRs from forks.
+      SESSION_SECRET: ci-testing-secret-for-github-actions-only-32chars
+      LEDEWIRE_BASE_URL: https://api.ledewire.com
 
     steps:
       - name: Checkout
@@ -18,8 +22,8 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
-          cache: "npm"
+          node-version: '20'
+          cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
@@ -30,10 +34,11 @@ jobs:
       - name: Lint
         run: npm run lint
 
-      - name: Test
-        run: npm test
-        env:
-          # Dummy secret satisfying the ≥32-char requirement.
-          # Tests mock the session & SDK; this value is never used at runtime.
-          SESSION_SECRET: "ci-testing-secret-for-github-actions-only-32chars"
-          LEDEWIRE_BASE_URL: "https://api.ledewire.com"
+      - name: Format check
+        run: npm run format:check
+
+      - name: Test with coverage
+        run: npm run test:coverage
+
+      - name: Build
+        run: npm run build

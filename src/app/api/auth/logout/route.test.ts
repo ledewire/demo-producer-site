@@ -11,7 +11,7 @@ const mockDestroy = vi.fn()
 beforeEach(() => {
   vi.clearAllMocks()
   mockDestroy.mockResolvedValue(undefined)
-   
+
   vi.mocked(getSession).mockResolvedValue({ destroy: mockDestroy } as any)
 })
 
