@@ -10,7 +10,7 @@ export default async function ContentListPage() {
 
   try {
     const client = await createMerchantClient()
-    const { data: items } = await client.seller.content.list(storeId)
+    const { data: items } = await client.merchant.content.list(storeId)
 
     return (
       <div className="space-y-6">

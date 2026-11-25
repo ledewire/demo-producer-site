@@ -10,7 +10,7 @@ export default async function EditContentPage({ params }: { params: Promise<{ id
 
   try {
     const client = await createMerchantClient()
-    const item = await client.seller.content.get(storeId, id)
+    const item = await client.merchant.content.get(storeId, id)
 
     return (
       <div className="max-w-4xl space-y-6">
