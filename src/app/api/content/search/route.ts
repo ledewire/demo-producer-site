@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
   const { storeId } = auth
   try {
     const client = await createMerchantClient()
-    const { data } = await client.seller.content.search(storeId, {
+    const { data } = await client.merchant.content.search(storeId, {
       ...(title ? { title: title as string } : {}),
       ...(metadata ? { metadata: metadata as Record<string, unknown> } : {}),
     })

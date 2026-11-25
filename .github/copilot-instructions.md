@@ -2,13 +2,13 @@
 
 ## What this project is
 
-A Next.js 15 merchant admin site backed by `@ledewire/node` (currently **0.9.0**).
+A Next.js 16 merchant admin site backed by `@ledewire/node` (currently **0.18.0**).
 Merchants log in (email/password or Google), then manage content, view sales, invite authors, and configure x402 pricing rules.
 No API key is stored server-side — all SDK calls use the merchant JWT from the iron-session cookie.
 
 ## Stack
 
-- **Next.js 15 App Router** — server components fetch data; client components handle mutations
+- **Next.js 16 App Router** — server components fetch data; client components handle mutations
 - **TypeScript strict mode** — no `any`, no suppression comments without justification
 - **`@ledewire/node` SDK** — all LedeWire API calls go through the SDK, never raw `fetch`
 - **`iron-session`** — encrypted httpOnly cookie; `SameSite=Strict`
@@ -28,7 +28,7 @@ No API key is stored server-side — all SDK calls use the merchant JWT from the
 
 - Use `loginWithEmailAndListStores()` / `loginWithGoogleAndListStores()` in auth routes — single call, returns `{ tokens, stores }`
 - Tokens from login come back as `StoredTokens` (camelCase, `expiresAt` as Unix ms) — assign `tokens.accessToken`, `tokens.refreshToken`, `tokens.expiresAt` directly; `parseExpiresAt` is no longer needed
-- All list methods (`seller.content.list`, `merchant.sales.list`, etc.) return `{ data, pagination }` — always destructure
+- All list methods (`merchant.content.list`, `merchant.sales.list`, etc.) return `{ data, pagination }` — always destructure
 - `instanceof LedewireError` correctly narrows in strict TS — no `err as LedewireError` casts needed
 - `Content` is a discriminated union on `content_type` — build typed objects, not `Record<string, any>`
 - `ForbiddenError` (extends `LedewireError`) is thrown when valid credentials have no merchant role — catch it before `LedewireError` to return `403`

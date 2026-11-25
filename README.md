@@ -1,6 +1,6 @@
 # LedeWire Producer Site
 
-A Next.js 15 merchant admin application for the [LedeWire](https://ledewire.com) content platform. Merchants log in with email/password or Google, then manage their content catalogue and invite authors to their store.
+A Next.js 16 merchant admin application for the [LedeWire](https://ledewire.com) content platform. Merchants log in with email/password or Google, then manage their content catalogue and invite authors to their store.
 
 > **Status:** Demo / reference implementation. Intended to evolve into the centrally-hosted LedeWire customer backend UI.
 
@@ -21,8 +21,8 @@ A Next.js 15 merchant admin application for the [LedeWire](https://ledewire.com)
 
 | Layer           | Choice                                |
 | --------------- | ------------------------------------- |
-| Framework       | Next.js 15 (App Router)               |
-| Language        | TypeScript 5 (strict mode)            |
+| Framework       | Next.js 16 (App Router)               |
+| Language        | TypeScript 6 (strict mode)            |
 | Auth / session  | `@ledewire/node` SDK + `iron-session` |
 | Styling         | Tailwind CSS + `@tailwindcss/forms`   |
 | Markdown        | `react-markdown` + `rehype-sanitize`  |
@@ -126,7 +126,8 @@ The [CI workflow](.github/workflows/ci.yml) runs on pushes to `main` and `stagin
 2. **Lint** — `eslint .`
 3. **Format check** — `prettier --check .`
 4. **Test with coverage** — `vitest run --coverage`
-5. **Build** — `next build`
+5. **Security audit** — `npm audit --audit-level=high`
+6. **Build** — `next build`
 
 A dummy `SESSION_SECRET` is injected by the workflow so the app's env-validation passes for the tests and the build; tests mock the session and SDK, so no real credentials are needed.
 
