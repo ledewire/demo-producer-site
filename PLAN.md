@@ -155,6 +155,7 @@ return `tokens` typed as `StoredTokens` (camelCase fields, `expiresAt` as a Unix
 timestamp) rather than the raw API shape (`access_token`, `expires_at` ISO string).
 
 **Before (0.4.0):**
+
 ```ts
 import { parseExpiresAt } from '@ledewire/node'
 
@@ -165,6 +166,7 @@ session.expiresAt = parseExpiresAt(tokens.expires_at)
 ```
 
 **After (0.5.0):**
+
 ```ts
 // parseExpiresAt import removed — no longer needed
 const { tokens, stores } = await client.merchant.auth.loginWithEmailAndListStores(...)
@@ -189,6 +191,7 @@ distinguish it from other API errors.
 **`ForbiddenError` is a subclass of `LedewireError` — catch it first.**
 
 **Before (0.4.0):**
+
 ```ts
 } catch (err) {
   if (err instanceof AuthError)    return NextResponse.json({ error: '...' }, { status: 401 })
@@ -198,6 +201,7 @@ distinguish it from other API errors.
 ```
 
 **After (0.5.0):**
+
 ```ts
 import { ForbiddenError, AuthError, LedewireError } from '@ledewire/node'
 
@@ -221,14 +225,16 @@ defaulting it to `true`. It is now `boolean | undefined` — the explicit `is_au
 at every call site can be removed.
 
 **Before (0.4.0):**
+
 ```ts
 await client.merchant.users.invite(storeId, {
   email,
-  is_author: true,   // required even though it was always true
+  is_author: true, // required even though it was always true
 })
 ```
 
 **After (0.5.0):**
+
 ```ts
 await client.merchant.users.invite(storeId, {
   email,
@@ -313,8 +319,8 @@ export default function LoginForm({ googleClientId }: Props) { ... }
 
 **`NEXT_PUBLIC_GOOGLE_CLIENT_ID` is no longer needed** and can be removed from `.env.local`.
 
-Files changed: [`src/app/(auth)/login/page.tsx`](src/app/(auth)/login/page.tsx) (converted
-to server component), new [`src/app/(auth)/login/LoginForm.tsx`](src/app/(auth)/login/LoginForm.tsx)
+Files changed: [`src/app/(auth)/login/page.tsx`](<src/app/(auth)/login/page.tsx>) (converted
+to server component), new [`src/app/(auth)/login/LoginForm.tsx`](<src/app/(auth)/login/LoginForm.tsx>)
 
 ---
 
@@ -325,6 +331,7 @@ upgrade if the SDK calls `clearTokens` while rendering a Server Component (e.g. 
 expires mid-render).
 
 **Symptom:**
+
 ```
 Error: Cookies can only be modified in a Server Action or Route Handler.
   at Object.clearTokens (src/lib/ledewire.ts:35:21)

@@ -71,9 +71,7 @@ describe('ForgotPasswordForm request step', () => {
   })
 
   it('advances to the confirm step on success', async () => {
-    mockFetch.mockResolvedValueOnce(
-      okResponse({ ok: true, message: 'Reset code sent.' }),
-    )
+    mockFetch.mockResolvedValueOnce(okResponse({ ok: true, message: 'Reset code sent.' }))
     render(<ForgotPasswordForm />)
 
     await userEvent.type(screen.getByLabelText('Email'), 'owner@example.com')
@@ -113,9 +111,7 @@ describe('ForgotPasswordForm request step', () => {
 
   it('disables the button and shows Sending… while in flight', async () => {
     let resolve!: () => void
-    mockFetch.mockReturnValueOnce(
-      new Promise((r) => (resolve = () => r(okResponse({ ok: true })))),
-    )
+    mockFetch.mockReturnValueOnce(new Promise((r) => (resolve = () => r(okResponse({ ok: true })))))
     render(<ForgotPasswordForm />)
 
     await userEvent.type(screen.getByLabelText('Email'), 'owner@example.com')
@@ -178,9 +174,7 @@ describe('ForgotPasswordForm confirm step', () => {
 
   it('shows the API error on an invalid reset code', async () => {
     await advanceToConfirmStep()
-    mockFetch.mockResolvedValueOnce(
-      errorResponse({ error: 'Invalid or expired reset code' }, 404),
-    )
+    mockFetch.mockResolvedValueOnce(errorResponse({ error: 'Invalid or expired reset code' }, 404))
 
     await userEvent.type(screen.getByLabelText('Reset code'), '000000')
     await userEvent.type(screen.getByLabelText('New password'), 'mynewpassword')
@@ -195,9 +189,7 @@ describe('ForgotPasswordForm confirm step', () => {
   it('disables the button and shows Resetting… while in flight', async () => {
     await advanceToConfirmStep()
     let resolve!: () => void
-    mockFetch.mockReturnValueOnce(
-      new Promise((r) => (resolve = () => r(okResponse({ ok: true })))),
-    )
+    mockFetch.mockReturnValueOnce(new Promise((r) => (resolve = () => r(okResponse({ ok: true })))))
 
     await userEvent.type(screen.getByLabelText('Reset code'), '246810')
     await userEvent.type(screen.getByLabelText('New password'), 'mynewpassword')

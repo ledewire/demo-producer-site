@@ -74,7 +74,7 @@ export default function ContentTable({ initialItems }: Props) {
         setError(data.error ?? 'Failed to delete content')
       } else {
         setItems((prev) => prev.filter((item) => item.id !== id))
-        setSearchResults((prev) => prev ? prev.filter((item) => item.id !== id) : null)
+        setSearchResults((prev) => (prev ? prev.filter((item) => item.id !== id) : null))
         // Stay on the current page unless it no longer exists after deletion
         setPage((p) => Math.min(p, Math.max(1, Math.ceil((items.length - 1) / PAGE_SIZE))))
       }

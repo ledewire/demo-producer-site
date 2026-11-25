@@ -55,7 +55,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 })
     }
     if (err instanceof LedewireError) {
-      console.error('[auth/login] LedewireError', { message: err.message, statusCode: err.statusCode })
+      console.error('[auth/login] LedewireError', {
+        message: err.message,
+        statusCode: err.statusCode,
+      })
       return NextResponse.json({ error: err.message }, { status: err.statusCode })
     }
     console.error('[auth/login] unexpected error', err)
