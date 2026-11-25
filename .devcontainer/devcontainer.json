@@ -29,8 +29,8 @@
         "typescript.tsdk": "node_modules/typescript/lib",
         "typescript.enablePromptUseWorkspaceTsdk": true,
         "tailwindCSS.experimental.classRegex": [
-          ["clsx\\(([^)]*)\\)", "(?:'|\\"|`)([^']*)(?:'|\\"|`)"],
-          ["cn\\(([^)]*)\\)", "(?:'|\\"|`)([^']*)(?:'|\\"|`)"]
+          ["clsx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"],
+          ["cn\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
         ],
         "search.exclude": {
           "**/node_modules": true,

@@ -120,13 +120,15 @@ src/
 
 ### Continuous Integration (GitHub Actions)
 
-The [CI workflow](.github/workflows/ci.yml) runs on every push and pull request:
+The [CI workflow](.github/workflows/ci.yml) runs on pushes to `main` and `staging`, and on pull requests into either:
 
 1. **Typecheck** — `tsc --noEmit`
-2. **Lint** — `next lint`
-3. **Test** — `vitest run`
+2. **Lint** — `eslint .`
+3. **Format check** — `prettier --check .`
+4. **Test with coverage** — `vitest run --coverage`
+5. **Build** — `next build`
 
-A dummy `SESSION_SECRET` is injected by the workflow so the app's env-validation passes at test time; tests mock the session and SDK, so no real credentials are needed.
+A dummy `SESSION_SECRET` is injected by the workflow so the app's env-validation passes for the tests and the build; tests mock the session and SDK, so no real credentials are needed.
 
 ### Deployment (Vercel)
 
