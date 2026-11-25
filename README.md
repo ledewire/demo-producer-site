@@ -27,7 +27,7 @@ A Next.js 16 merchant admin application for the [LedeWire](https://ledewire.com)
 | Styling         | Tailwind CSS + `@tailwindcss/forms`   |
 | Markdown        | `react-markdown` + `rehype-sanitize`  |
 | Testing         | Vitest + React Testing Library        |
-| Dev environment | VS Code devcontainer (Node 20)        |
+| Dev environment | VS Code devcontainer (Node 26)        |
 
 ---
 
@@ -48,7 +48,7 @@ A Next.js 16 merchant admin application for the [LedeWire](https://ledewire.com)
 
 ### Option B — Local
 
-Prerequisites: Node 20+.
+Prerequisites: Node 26 (`.nvmrc`).
 
 ```bash
 npm install
