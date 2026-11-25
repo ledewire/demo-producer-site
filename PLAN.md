@@ -15,7 +15,7 @@ No API key or secret is stored — all operations run on the merchant auth token
 | Session storage | `iron-session` encrypted httpOnly cookie                      | Tokens never exposed to client JS; survives page reload                |
 | Token refresh   | SDK `TokenStorage` adapter writes back to the cookie          | Transparent — no manual refresh logic needed                           |
 | Styling         | Tailwind CSS + `@tailwindcss/forms`                           | Utility-first; no component library dependency                         |
-| Dev environment | VS Code devcontainer (Node 20, TypeScript, ESLint, Prettier)  | Reproducible in Codespaces or locally                                  |
+| Dev environment | VS Code devcontainer (Node 26, TypeScript, ESLint, Prettier)  | Reproducible in Codespaces or locally                                  |
 
 ---
 
@@ -23,7 +23,7 @@ No API key or secret is stored — all operations run on the merchant auth token
 
 ### Config & Tooling
 
-- [`.devcontainer/devcontainer.json`](.devcontainer/devcontainer.json) — Node 20 container, port 3000 forwarded, VS Code extensions pre-installed
+- [`.devcontainer/devcontainer.json`](.devcontainer/devcontainer.json) — Node 26 container, port 3000 forwarded, VS Code extensions pre-installed
 - [`package.json`](package.json) — Next.js 15, `@ledewire/node ^0.4.0`, `iron-session`, Tailwind
 - [`tsconfig.json`](tsconfig.json) — strict mode, `@/*` path alias
 - [`.env.example`](.env.example) — documents all required env vars
