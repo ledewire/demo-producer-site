@@ -26,7 +26,7 @@ function makeRequest(body: unknown) {
 
 beforeEach(() => {
   vi.clearAllMocks()
-   
+
   vi.mocked(createClient).mockReturnValue({
     merchant: { auth: { requestPasswordReset: mockRequestPasswordReset } },
   } as any)

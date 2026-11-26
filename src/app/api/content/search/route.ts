@@ -19,7 +19,10 @@ export async function POST(request: NextRequest) {
   if (title !== undefined && typeof title !== 'string') {
     return NextResponse.json({ error: 'title must be a string' }, { status: 400 })
   }
-  if (metadata !== undefined && (typeof metadata !== 'object' || Array.isArray(metadata) || metadata === null)) {
+  if (
+    metadata !== undefined &&
+    (typeof metadata !== 'object' || Array.isArray(metadata) || metadata === null)
+  ) {
     return NextResponse.json({ error: 'metadata must be an object' }, { status: 400 })
   }
 
@@ -28,7 +31,7 @@ export async function POST(request: NextRequest) {
   const { storeId } = auth
   try {
     const client = await createMerchantClient()
-    const { data } = await client.seller.content.search(storeId, {
+    const { data } = await client.merchant.content.search(storeId, {
       ...(title ? { title: title as string } : {}),
       ...(metadata ? { metadata: metadata as Record<string, unknown> } : {}),
     })

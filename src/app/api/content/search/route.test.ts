@@ -8,7 +8,7 @@ vi.mock('@/lib/session', () => ({
   getSession: vi.fn().mockResolvedValue({ accessToken: 'tok', storeId: 'store-abc' }),
 }))
 
-import { mockSellerContent } from '@/__mocks__/ledewire-client'
+import { mockMerchantContent } from '@/__mocks__/ledewire-client'
 import { getSession } from '@/lib/session'
 import { POST } from './route'
 
@@ -28,28 +28,28 @@ beforeEach(() => {
 describe('POST /api/content/search', () => {
   it('returns items matching the metadata query', async () => {
     const items = [makeContent({ title: 'Tagged Article' })]
-    mockSellerContent.search.mockResolvedValueOnce({ data: items, pagination: makePagination(1) })
+    mockMerchantContent.search.mockResolvedValueOnce({ data: items, pagination: makePagination(1) })
 
     const res = await POST(makeRequest({ metadata: { tag: 'featured' } }))
     const body = await res.json()
 
     expect(res.status).toBe(200)
     expect(body.items).toEqual(items)
-    expect(mockSellerContent.search).toHaveBeenCalledWith('store-abc', {
+    expect(mockMerchantContent.search).toHaveBeenCalledWith('store-abc', {
       metadata: { tag: 'featured' },
     })
   })
 
   it('returns items matching a title query', async () => {
     const items = [makeContent({ title: 'My Article' })]
-    mockSellerContent.search.mockResolvedValueOnce({ data: items, pagination: makePagination(1) })
+    mockMerchantContent.search.mockResolvedValueOnce({ data: items, pagination: makePagination(1) })
 
     const res = await POST(makeRequest({ title: 'My' }))
     const body = await res.json()
 
     expect(res.status).toBe(200)
     expect(body.items).toEqual(items)
-    expect(mockSellerContent.search).toHaveBeenCalledWith('store-abc', { title: 'My' })
+    expect(mockMerchantContent.search).toHaveBeenCalledWith('store-abc', { title: 'My' })
   })
 
   it('returns 400 when neither title nor metadata is provided', async () => {
@@ -86,7 +86,7 @@ describe('POST /api/content/search', () => {
   })
 
   it('forwards SDK errors with their status code', async () => {
-    mockSellerContent.search.mockRejectedValueOnce(new LedewireError('store not found', 404))
+    mockMerchantContent.search.mockRejectedValueOnce(new LedewireError('store not found', 404))
     const res = await POST(makeRequest({ metadata: {} }))
     const body = await res.json()
     expect(res.status).toBe(404)

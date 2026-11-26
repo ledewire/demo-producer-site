@@ -19,7 +19,11 @@ interface Props {
  * Emits a hidden <input name="content_body"> so parent forms can read the
  * raw markdown via FormData without any change to their submit logic.
  */
-export default function MarkdownEditor({ defaultValue = '', id = 'content_body', required }: Props) {
+export default function MarkdownEditor({
+  defaultValue = '',
+  id = 'content_body',
+  required,
+}: Props) {
   const [value, setValue] = useState(defaultValue)
 
   return (
@@ -27,7 +31,9 @@ export default function MarkdownEditor({ defaultValue = '', id = 'content_body',
       <div className="grid grid-cols-2 gap-4 min-h-64">
         {/* Editor pane */}
         <div className="flex flex-col">
-          <span className="mb-1 text-xs font-medium text-gray-400 uppercase tracking-wide">Write</span>
+          <span className="mb-1 text-xs font-medium text-gray-400 uppercase tracking-wide">
+            Write
+          </span>
           <textarea
             id={id}
             aria-label="Markdown source"
@@ -42,7 +48,9 @@ export default function MarkdownEditor({ defaultValue = '', id = 'content_body',
 
         {/* Preview pane */}
         <div className="flex flex-col">
-          <span className="mb-1 text-xs font-medium text-gray-400 uppercase tracking-wide">Preview</span>
+          <span className="mb-1 text-xs font-medium text-gray-400 uppercase tracking-wide">
+            Preview
+          </span>
           <div
             data-testid="markdown-preview"
             className="flex-1 overflow-auto rounded-md border border-gray-200 bg-white p-4 prose prose-sm max-w-none"

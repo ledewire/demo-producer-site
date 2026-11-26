@@ -39,13 +39,11 @@ describe('PricingRulesTable', () => {
     const rule = makePricingRule({ id: 'rule-123' })
     vi.stubGlobal(
       'fetch',
-      vi
-        .fn()
-        .mockResolvedValue({
-          ok: true,
-          status: 200,
-          json: async () => ({ rule: { ...rule, active: false } }),
-        }),
+      vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({ rule: { ...rule, active: false } }),
+      }),
     )
     render(<PricingRulesTable initialRules={[rule]} />)
 

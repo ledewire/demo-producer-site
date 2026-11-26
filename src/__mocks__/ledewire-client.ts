@@ -11,7 +11,7 @@ import { vi } from 'vitest'
 // types on every method so tests can call .mockResolvedValueOnce etc. directly.
 const mockClient = vi.mocked(createMockClient(vi.fn), true)
 
-export const mockSellerContent = mockClient.seller.content
+export const mockMerchantContent = mockClient.merchant.content
 export const mockMerchantSales = mockClient.merchant.sales
 export const mockMerchantUsers = mockClient.merchant.users
 export const mockMerchantPricingRules = mockClient.merchant.pricingRules

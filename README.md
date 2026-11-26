@@ -1,6 +1,6 @@
 # LedeWire Producer Site
 
-A Next.js 15 merchant admin application for the [LedeWire](https://ledewire.com) content platform. Merchants log in with email/password or Google, then manage their content catalogue and invite authors to their store.
+A Next.js 16 merchant admin application for the [LedeWire](https://ledewire.com) content platform. Merchants log in with email/password or Google, then manage their content catalogue and invite authors to their store.
 
 > **Status:** Demo / reference implementation. Intended to evolve into the centrally-hosted LedeWire customer backend UI.
 
@@ -21,13 +21,13 @@ A Next.js 15 merchant admin application for the [LedeWire](https://ledewire.com)
 
 | Layer           | Choice                                |
 | --------------- | ------------------------------------- |
-| Framework       | Next.js 15 (App Router)               |
-| Language        | TypeScript 5 (strict mode)            |
+| Framework       | Next.js 16 (App Router)               |
+| Language        | TypeScript 6 (strict mode)            |
 | Auth / session  | `@ledewire/node` SDK + `iron-session` |
 | Styling         | Tailwind CSS + `@tailwindcss/forms`   |
 | Markdown        | `react-markdown` + `rehype-sanitize`  |
 | Testing         | Vitest + React Testing Library        |
-| Dev environment | VS Code devcontainer (Node 20)        |
+| Dev environment | VS Code devcontainer (Node 26)        |
 
 ---
 
@@ -48,7 +48,7 @@ A Next.js 15 merchant admin application for the [LedeWire](https://ledewire.com)
 
 ### Option B — Local
 
-Prerequisites: Node 20+.
+Prerequisites: Node 26 (`.nvmrc`).
 
 ```bash
 npm install
@@ -120,13 +120,16 @@ src/
 
 ### Continuous Integration (GitHub Actions)
 
-The [CI workflow](.github/workflows/ci.yml) runs on every push and pull request:
+The [CI workflow](.github/workflows/ci.yml) runs on pushes to `main` and `staging`, and on pull requests into either:
 
 1. **Typecheck** — `tsc --noEmit`
-2. **Lint** — `next lint`
-3. **Test** — `vitest run`
+2. **Lint** — `eslint .`
+3. **Format check** — `prettier --check .`
+4. **Test with coverage** — `vitest run --coverage`
+5. **Security audit** — `npm audit --audit-level=high`
+6. **Build** — `next build`
 
-A dummy `SESSION_SECRET` is injected by the workflow so the app's env-validation passes at test time; tests mock the session and SDK, so no real credentials are needed.
+A dummy `SESSION_SECRET` is injected by the workflow so the app's env-validation passes for the tests and the build; tests mock the session and SDK, so no real credentials are needed.
 
 ### Deployment (Vercel)
 

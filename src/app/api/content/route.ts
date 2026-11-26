@@ -9,7 +9,7 @@ export async function GET(_request: NextRequest) {
   const { storeId } = auth
   try {
     const client = await createMerchantClient()
-    const { data } = await client.seller.content.list(storeId)
+    const { data } = await client.merchant.content.list(storeId)
     return NextResponse.json({ items: data })
   } catch (err) {
     if (err instanceof AuthError) {
@@ -58,7 +58,10 @@ export async function POST(request: NextRequest) {
   }
 
   if (!Number.isInteger(price_cents) || price_cents < 0) {
-    return NextResponse.json({ error: 'price_cents must be a non-negative integer' }, { status: 400 })
+    return NextResponse.json(
+      { error: 'price_cents must be a non-negative integer' },
+      { status: 400 },
+    )
   }
 
   if (type === 'external_ref') {
@@ -99,7 +102,7 @@ export async function POST(request: NextRequest) {
             visibility: (visibility as 'public' | 'unlisted') ?? 'public',
           }
 
-    const content = await client.seller.content.create(storeId, sdkPayload)
+    const content = await client.merchant.content.create(storeId, sdkPayload)
 
     return NextResponse.json({ ok: true, content }, { status: 201 })
   } catch (err) {
