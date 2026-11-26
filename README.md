@@ -133,36 +133,22 @@ A dummy `SESSION_SECRET` is injected by the workflow so the app's env-validation
 
 ### Deployment (Vercel)
 
-The [deploy workflow](.github/workflows/deploy.yml) runs automatically when a commit lands on `main`. It uses the Vercel CLI "build locally, deploy prebuilt" pattern so production environment variables are managed in the **Vercel dashboard**, not duplicated in GitHub secrets.
+Vercel's Git integration deploys this repo, and the project's deployment policy allows only Git deployments:
 
-#### One-time setup
+| Branch    | Vercel environment |
+| --------- | ------------------ |
+| `main`    | Production         |
+| `staging` | `staging`          |
+| PR branch | Preview            |
 
-1. **Link the repo to a Vercel project** (run once, locally):
+Changes merge into `staging` first. A `staging` → `main` PR, merged with a merge commit, promotes them to production. Nothing deploys from GitHub Actions or the Vercel CLI.
 
-   ```bash
-   npm i -g vercel
-   vercel link          # creates .vercel/project.json
-   cat .vercel/project.json   # note orgId and projectId
-   ```
+Set these in the Vercel dashboard (`Project → Settings → Environment Variables`), separately for Production and `staging`:
 
-2. **Add three GitHub repository secrets** (`Settings → Secrets and variables → Actions`):
-
-   | Secret              | Where to get it                         |
-   | ------------------- | --------------------------------------- |
-   | `VERCEL_TOKEN`      | vercel.com → Settings → Tokens → Create |
-   | `VERCEL_ORG_ID`     | `orgId` from `.vercel/project.json`     |
-   | `VERCEL_PROJECT_ID` | `projectId` from `.vercel/project.json` |
-
-3. **Add production environment variables in the Vercel dashboard** (`Project → Settings → Environment Variables → Production`):
-
-   | Variable            | Notes                                              |
-   | ------------------- | -------------------------------------------------- |
-   | `SESSION_SECRET`    | ≥32 chars. Generate with `openssl rand -hex 32`.   |
-   | `LEDEWIRE_BASE_URL` | Defaults to `https://api.ledewire.com` if omitted. |
-
-   The `vercel pull` step in the workflow downloads these at build time.
-
-4. **Add `.vercel/` to `.gitignore`** — it contains org/project IDs but no secrets; keeping it out of version control is conventional since the IDs are stored in GitHub secrets.
+| Variable            | Notes                                                                                                           |
+| ------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `SESSION_SECRET`    | ≥32 chars, different per environment. Generate with `openssl rand -hex 32`.                                     |
+| `LEDEWIRE_BASE_URL` | Production: `https://api.ledewire.com` (the default if omitted). `staging`: `https://api-staging.ledewire.com`. |
 
 ---
 
